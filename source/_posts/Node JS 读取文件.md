@@ -22,14 +22,14 @@ tags: Node JS
 http://nodejs.cn/api/fs.html#fs_fs_readfile_path_options_callback
 ```
 
-- `path` <string> | <Buffer> | <URL> | <integer> 文件名或文件描述符
-- options   <Object> | <string>
-    - `encoding` <null> | <string> **默认值:** `null`
-    - `flag` <string>  **默认值:** `'r'`。
-    - `signal` <AbortSignal>允许中止正在进行的读取文件
-- callback   <Function>
-    - `err`  <Error> | <AggregateError>
-    - `data` <string> | <Buffer>
+- `path` \<string> | \<Buffer> | \<URL> | \<integer> 文件名或文件描述符
+- options   \<Object> | \<string>
+    - `encoding` \<null> | \<string> **默认值:** `null`
+    - `flag` \<string>  **默认值:** `'r'`。
+    - `signal` \<AbortSignal>允许中止正在进行的读取文件
+- callback   \<Function>
+    - `err`  \<Error> | \<AggregateError>
+    - `data` \<string> | \<Buffer>
 
 
 

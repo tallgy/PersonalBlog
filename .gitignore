@@ -26,5 +26,4 @@ pnpm-debug.log*
 
 .deploy_git
 .github
-.npmignore
 db.json

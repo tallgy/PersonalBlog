@@ -55,3 +55,13 @@ page， 就是页面，会在source文件里面生成你写的文件名字，然
 
 直接在md文档上写就完了。会自动转译的。
 
+
+
+## 上传
+
+```
+npx hexo clean
+npx hexo g
+nex hexo d
+```
+
