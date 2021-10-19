@@ -8,7 +8,11 @@ tags: hexo
 
 # hexo
 
-md文件和html的文件对应关系在那个 ` db.json `， 它使用了hash，id以及其他，我这里就使用简单的形式对应就行了。
+md文件和html的文件对应关系在那个 ` db.json `， 它使用了hash，id以及其他。
+
+```
+https://hexo.io/zh-cn/docs/
+```
 
 
 

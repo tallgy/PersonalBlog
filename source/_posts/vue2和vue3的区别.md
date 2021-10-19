@@ -1,14 +1,25 @@
 ---
 title: Vue2和Vue3的区别
+tag:
+  - Vue
+  - Vue3的不同
 date: 2021-10-16 20:02:19
-tag: 
- - vue
- - 面试
+tags:
 ---
 
 
 
+
 # Vue2和Vue3的区别
+
+参考别人的文章和官网
+
+```
+https://blog.csdn.net/weixin_46071217/article/details/108858877
+https://zhuanlan.zhihu.com/p/139590941
+
+https://v3.cn.vuejs.org/guide/migration/introduction.html
+```
 
 
 
