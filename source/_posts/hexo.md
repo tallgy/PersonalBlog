@@ -61,11 +61,58 @@ page， 就是页面，会在source文件里面生成你写的文件名字，然
 
 
 
+## 图片上传
+
+```
+https://blog.csdn.net/xjm850552586/article/details/84101345
+```
+
+使用插件  `hexo-asset-image`
+
+
+
 ## 上传
 
 ```
 npx hexo clean
+	清除缓存文件 ( db.json) 和生成的文件 ( public)。
 npx hexo g
+	生成静态文件
 nex hexo d
+	将静态文件上传
+```
+
+```
+这里因为需要使用三个命令，很麻烦，所以就想着简单化一点。
+```
+
+```
+开始是想着使用npm或者npx命令，自己写一个的，但是因为技术不够，所以还不会，后面了解了更多了之后再进行解决。
+```
+
+```
+所以，我是用的方式是，通过一个bat文件直接将这三个命令写下来，我只需要运行这个文件就行了。
+所以我在blog里面创建了一个 
+publish.bat
+然后直接在里面，写入
+
+call npx hexo clean
+call npx hexo g
+call npx hexo d
+
+这里需要在前面加上call方法。在批处理脚本中，call命令用来从一个批处理脚本中调用另一个批处理脚本。
+就这样就完成了。。
+```
+
+
+
+## gitee自动更新
+
+```
+使用puppeteer模块
+
+但是因为我谷歌浏览器修改过位置，所以需要重新下载，所以我没有进行后续的操作了。
+
+https://www.jianshu.com/p/6460df84a099
 ```
 
