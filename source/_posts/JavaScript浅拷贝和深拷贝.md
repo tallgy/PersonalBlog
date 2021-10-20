@@ -69,6 +69,42 @@ for (const key in keys) {
 
 
 
+## 同时也可以使用 `Object.assign()` 进行浅拷贝
+
+```
+https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
+```
+
+```
+Object.assign(target, source);
+
+第一个参数是目标对象, 第二个参数是源对象,
+我们会将源对象的值拷贝给目标对象,对于重复的会被覆盖.
+然后再将目标对象返回.
+```
+
+```
+const target = { a: 1, b: 2 };
+const source = { b: 4, c: 5, x: {
+    a: 1
+  } };
+
+const returnedTarget = Object.assign(target, source);
+
+console.log(target);
+// expected output: Object { a: 1, b: 4, c: 5, x: { a: 1 } }
+console.log(returnedTarget);
+// expected output: Object { a: 1, b: 4, c: 5, x: { a: 1 } }
+
+source.x.a = 3;
+console.log(target);
+// expected output: Object { a: 1, b: 4, c: 5, x: { a: 3 } }
+console.log(returnedTarget);
+// expected output: Object { a: 1, b: 4, c: 5, x: { a: 3 } }
+```
+
+
+
 # 深拷贝
 
 和浅拷贝不同的是，深拷贝，是要进行递归，吧对象里面的对象也要拷贝出来。
@@ -142,7 +178,8 @@ function getType(target) {
       //正则
       return 'regexp'
     } else {
-      // 对象
+      // 对象，这里还要判断是否为map和set对象。
+      //并且，map，set只能使用 forof 进行循环，或者使用自带的 oreach 进行循环。
       if (typeof target.valueOf() === 'object') {
         return 'object';
       } else {
@@ -156,6 +193,13 @@ function getType(target) {
   }
 }
 ```
+
+```
+这里也可以使用 Object.prototype.toString.call(); 方法进行调用来判断是什么类型的.这个就比较方便,直接可以将map,set,对象,数组,基本数据类型等都辨别出来.
+可以看看我写的另一个关于 类型判断的blog ,里面有.
+```
+
+
 
 #### 然后就是递归
 
@@ -184,7 +228,9 @@ function deepClone(target) {
 
 
 
-#### 对于函数如何进行存储
+#### 对于函数如何进行拷贝
+
+前几天面试问到了..
 
 我的想法，有三种方式，
 
@@ -204,13 +250,36 @@ function fn1() {
 	这里，需要使用一个箭头函数进行包装，如果使用普通函数进行包装。也没有用处。
 let fn2 = eval('() => ' + fn1.toString())(); //这里，fn和fn1都可以运行。
 
+
 这样写也可以。
 eval(`
   (() => fn)()
 `)()
 ```
 
-​	**第二种：使用new Function('return ' + func.toString())();**
+```
+应该是因为需要使用()进行包裹.
+let a = eval(`
+  (function fn() {
+    console.log(1);
+    return 1;
+  })
+`);
+a()
+console.log(a.toString())
+```
+
+```
+1
+function fn() {
+    console.log(1);
+    return 1;
+  }
+```
+
+​	
+
+**第二种：使用new Function('return ' + func.toString())();**
 
 ```
 let f = new Function('return ' + fn.toString())()
