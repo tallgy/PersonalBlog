@@ -91,6 +91,6 @@ Function.prototype.myBind = function (ctx) {
 ```
 
 ```
-fn.bind(db, ['cc', 1])();
+fn.bind(db, 'cc', 1)();
 ```
 
