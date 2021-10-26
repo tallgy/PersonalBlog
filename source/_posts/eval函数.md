@@ -4,6 +4,9 @@ date: 2021-10-20 11:01:49
 tags:
  - JavaScript
  - eval
+categories:
+ - JavaScript
+ - Global_Objects
 ---
 
 

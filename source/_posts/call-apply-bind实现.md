@@ -7,6 +7,10 @@ tags:
  - apply
  - bind
  - 源码
+categories:
+ - [JavaScript, Global_Objects]
+ - [JavaScript, Global_Objects]
+ - [JavaScript, Global_Objects]
 ---
 
 

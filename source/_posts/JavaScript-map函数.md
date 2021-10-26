@@ -6,6 +6,9 @@ tags:
  - Array
  - map函数
  - 源码
+categories:
+ - JavaScript
+ - Array
 ---
 
 

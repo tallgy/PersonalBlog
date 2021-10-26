@@ -1,7 +1,10 @@
 ---
 title: hexo基础
 date: 2021/10/14
-tags: hexo
+tags: 
+ - hexo
+categories:
+ - hexo
 ---
 
 

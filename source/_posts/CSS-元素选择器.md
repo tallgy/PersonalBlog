@@ -6,7 +6,6 @@ tags:
  - 元素选择器
 categories:
  - CSS
- - 元素选择器
 ---
 
 
@@ -492,11 +491,11 @@ https://developer.mozilla.org/zh-CN/docs/Web/CSS/Specificity
 
 我们是使用的权重方式进行的判断优先级
 
-**内联的权重是：1000**
+**内联的权重是：1 0 0 0**
 
-**id的权重是 100**
+**id的权重是 1 0 0**
 
-**class的权重是 10**
+**class的权重是 1 0**
 
 **标签的权重是 1**
 

@@ -4,6 +4,8 @@ date: {{ date }}
 tags: 
  - hexo
  - next
+categories:
+ - hexo
 ---
 
 

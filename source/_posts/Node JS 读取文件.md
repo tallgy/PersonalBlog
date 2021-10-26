@@ -1,10 +1,13 @@
 ---
 title: Node JS 读取文件
 date: 2021/10/14
-tags: Node JS
+tags: 
+ - Node JS
+ - fs
+categories:
+ - Node JS
+ - fs
 ---
-
-
 
 
 

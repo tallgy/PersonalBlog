@@ -5,6 +5,8 @@ tags:
  - JavaScript
  - 浅拷贝
  - 深拷贝
+categories:
+ - JavaScript
 ---
 
 

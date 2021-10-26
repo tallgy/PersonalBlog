@@ -1,10 +1,12 @@
 ---
 title: Vue2和Vue3的区别
-tag:
-  - Vue
-  - Vue3的不同
 date: 2021-10-16 20:02:19
 tags:
+  - Vue
+  - Vue3的不同
+categories:
+ - Vue
+ - Vue3
 ---
 
 

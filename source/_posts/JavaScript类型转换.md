@@ -4,6 +4,9 @@ date: 2021-10-19 10:07:37
 tags:
  - JavaScript
  - 类型转换
+categories:
+ - JavaScript
+ - Global_Objects
 ---
 
 
