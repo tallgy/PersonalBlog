@@ -301,26 +301,6 @@ a:active
 可以代表按下按键和松开按键。常用于按钮和链接
 ```
 
-**disabled**
-
-```
-表示被禁用的元素
-```
-
-**enabled**
-
-```
-没有被禁用的元素
-```
-
-**first-child**
-
-```
-一组兄弟元素中的第一个元素。
-
-p:first-child，代表的是p的第一个
-```
-
 **focus**
 
 ```
@@ -337,9 +317,35 @@ MDN上有个描述
 
 ```
 	:hover CSS伪类适用于用户使用指示设备虚指一个元素（没有激活它）的情况。这个样式会被任何与链接相关的伪类重写，像:link, :visited, 和 :active等。为了确保生效，:hover规则需要放在:link和:visited规则之后，但是在:active规则之前，按照LVHA的循顺序声明:link－:visited－:hover－:active。
+	
+	大致意思就是说， link会覆盖掉其他的样式，如果写在后面，其他的样式不会显示出来。
 ```
 
-没有理解什么意思。
+**link**
+
+```
+	应该只能用于 a 标签，我使用span标签没有成功
+	:link伪类选择器是用来选中元素当中的链接，所有未访问的链接（如果定义了visited伪元素），但是如果没有定义visited伪元素的话，那么就会将所有链接都选中，不管是不是访问过的。
+	对于一个链接是否访问过，应该是通过href的值来进行的判断。
+	因为link会覆盖其他伪元素的样式，所以书写顺序是：
+		:link — :visited — :hover — :active。:focus伪类选择器常伴随在:hover伪类选择器左右，需要根据你想要实现的效果确定它们的顺序。
+```
+
+
+
+**disabled**
+
+```
+表示被禁用的元素
+```
+
+**enabled**
+
+```
+没有被禁用的元素
+```
+
+
 
 **invalid**
 
@@ -347,17 +353,51 @@ MDN上有个描述
 :invalid CSS 伪类 表示任意内容未通过验证的 <input> 或其他 <form> 元素 .
 ```
 
+**valid**
+
+```
+:valid CSS 伪类表示内容验证正确的<input> 或其他 <form> 元素。这能简单地将校验字段展示为一种能让用户辨别出其输入数据的正确性的样式。
+
+验证正确的展示
+```
+
+**optional**
+
+```
+:optional
+表示 任意没有 required 属性的  <input>，<select> 或  <textarea> 元素
+```
+
+**required**
+
+```
+:required
+表示设置了 required 属性的 <input>，<select> 或  <textarea> 元素
+```
+
+**read-only**
+
+```
+:read-only
+	选中其中元素不可被用户编辑的状态
+与之对应的
+	read-write
+```
+
+
+
+**first-child**
+
+```
+一组兄弟元素中的第一个元素。
+
+p:first-child，代表的是p的第一个
+```
+
 **last-child**
 
 ```
 一组兄弟元素中的最后一个元素。
-```
-
-**link**
-
-```
-https://developer.mozilla.org/zh-CN/docs/Web/CSS/:link
-看看
 ```
 
 **not**
@@ -372,10 +412,94 @@ https://developer.mozilla.org/zh-CN/docs/Web/CSS/:link
 **nth-child**
 
 ```
-https://developer.mozilla.org/zh-CN/docs/Web/CSS/:nth-child
+	:nth-child(an+b) 这个 CSS 伪类首先找到所有当前元素的兄弟元素，然后按照位置先后顺序从1开始排序，选择的结果为CSS伪类:nth-child括号中表达式（an+b）匹配到的元素集合（n=0，1，2，3...）。
+	
+	简单来说，:nth-child(an+b)，其中 an+b 的值的范围是 1~n，超过范围的不会显示，虽然 an+b 的范围是 1~n，但是n的范围却是 0~，因为我们使用 n+1 可以发现，每个都还是有，说明了这个事实。
+	
+	几个特殊值：使用后，不要再加n和b了
+		odd，奇数行
+		even，偶数行
 ```
 
+**注意：**
+
+​	不能写成 b+an 的形式，只能是 an+b
+
+​	可以使用减号，`-`, 但是要注意一个问题，就是n的取值，貌似不是从 0~n，而是从0开始，不知道最终值是多少，所以对于 :nth-child(n-10)，还是会全部显示，但是使用 :nth-child(2n - 1)，就会发现不同。
+
+​	所以一般要找前面n个，都是使用的 `-n+b`。
+
+​	第二个不能使用n  2n-n，没有效果。
+
+
+
+**nth-last-child**
+
+​	从兄弟节点中从后往前匹配处于某些位置的元素
+
+**注意:** 这个伪类和 [`:nth-child`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/:nth-child) 基本一致, 但它是从*结尾*计数, 而不是从开始计数.
+
+
+
+**only-child**
+
 ```
-https://developer.mozilla.org/zh-CN/docs/Web/CSS/Pseudo-classes
+匹配没有任何兄弟的元素
+
+.b
+	.c
+	.c
+.b
+	.c
+	
+	类似于上面的，不是通过 .b:only-child，因为在同层中，.b没有只存在一个的情况，使用 .c:only-child 就能找到。
+
+	等效的选择器还可以写成 :first-child:last-child或者:nth-child(1):nth-last-child(1),当然,前者的权重会低一点.
 ```
 
+
+
+**root**
+
+```
+	:root 这个 CSS 伪类匹配文档树的根元素。对于 HTML 来说，:root 表示 <html> 元素，除了优先级更高之外，与 html 选择器相同。
+```
+
+**target**
+
+```
+对目标元素的id进行一个匹配，当url中出现了这个id时显示，url的构造形式类似于vue-router 的hash模式
+
+<div id="12"></div>
+
+div:target { } 
+当url为 http://xxxx#12 时，这里面的效果就会展示出来
+```
+
+
+
+# 选择器优先级
+
+```
+https://developer.mozilla.org/zh-CN/docs/Web/CSS/Specificity
+```
+
+简单来说，
+
+**!important > 行内样式>ID选择器 > 类选择器 > 标签 > 通配符 > 继承 > 浏览器默认属性**
+
+
+
+我们是使用的权重方式进行的判断优先级
+
+**内联的权重是：1000**
+
+**id的权重是 100**
+
+**class的权重是 10**
+
+**标签的权重是 1**
+
+**注意：**
+
+​	权重是不会进位的，不会因为有11个class，就可以超过id
