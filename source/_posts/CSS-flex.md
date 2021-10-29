@@ -141,11 +141,13 @@ nowrap
 
 ## flex-basis 元素的空间大小
 
-​		该属性的默认值是 `auto` ，此时，浏览器会检查这个元素是否具有确定的尺寸(width / heght ，这个看是使用 row 还是 Colum)，如果**具有确定的尺寸**，就会将该值设置为 flex-basis。如果没有设定尺寸，就会采用**元素内容的尺寸**。这里的元素内容尺寸，不会因为 盒模型 的模式而变化，就是只会计算content 的部分。
+​		该属性的默认值是 `auto` ，此时，浏览器会检查这个元素是否具有确定的尺寸(width / heght ，这个看是使用 row 还是 Colum)，如果**具有确定的尺寸**，就会将该值设置为 flex-basis。如果没有设定尺寸，就会采用**元素内容的尺寸**。如果不使用  [`box-sizing`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/box-sizing) 改变盒模型的话，那么这个属性就决定了 flex 元素的内容盒（content-box）的尺寸。
 
 
 
 ## flex-grow 延展比例
+
+​		负值无效，默认为0
 
 ​		简单来说，这个是一个比例，对于存在可用空间的(可用空间：就是指在使用之后，父元素还存在剩余的空间。)， 子元素会根据这个比例将可用空间占据。
 
@@ -154,6 +156,8 @@ nowrap
 
 
 ## flex-shrink 收缩比例
+
+​		负值无效，默认为1
 
 ​		简单来说，就会对于如果容器不够排列 flex元素的空间。那么就会按照比例进行收缩。默认为1
 
@@ -235,22 +239,47 @@ div
 - `flex: <positive-number>`
   - 代表 `flex: x x 0`
 
+
+
+## align-items 交叉轴方向对齐
+
+​		默认为 `stretch `，默认会被拉伸到最高元素的高度。
+
 ```
-https://developer.mozilla.org/zh-CN/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox#flex_%E5%85%83%E7%B4%A0%E4%B8%8A%E7%9A%84%E5%B1%9E%E6%80%A7
+stretch
+	拉伸到最高元素的高度
+flex-start
+	按flex容器的顶部对齐
+flex-end
+	按flex容器的下部对齐
+center
+	使它们居中对齐
 ```
 
 
+
+## justify-content 主轴方向对齐
+
+​		初始值是 `flex-start`， 元素从容器的起始线排列。
+
+```
+stretch
+	不了解
+flex-start
+	从容器的起始线排列
+flex-end
+	从容器的终止线开始排列
+center
+	在中间排列
+space-around
+	把元素排列好之后的剩余空间拿出来，平均分配到元素之间，所以元素之间间隔相等
+space-between
+	使每个元素的左右空间相等
+```
 
 
 
 # 对于flex的溢出：
-
-```
-https://blog.csdn.net/qq_33539213/article/details/101676146
-这个为什么会有这个效果，理解了 看看
-```
-
-
 
 ### 方式一
 
@@ -301,6 +330,8 @@ div.father
 ### 方式三
 
 ​		这个是文字超出导致的溢出，就是如果文字，或者 img图片的设置超过了宽高也会造成溢出。
+
+​		这个的原因是因为，对于英文和数字，浏览器不能识别你的单词是否是一个，所以如果你输入一串英文和数字，中间没有分割(前面有说)，就会造成溢出，而汉字不行。
 
 <img src="CSS-flex/image-20211027213217557.png" alt="image-20211027213217557" style="zoom:50%;" />
 
