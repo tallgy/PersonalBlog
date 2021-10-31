@@ -110,4 +110,7 @@ data：
 </span>
 ```
 
-​		这里 v-bind 是 Vue 提供的 attribute 。
+​		这里 v-bind 是 Vue 提供的 `attribute `。它可以绑定元素原有的 `attribute` 。这个指令的效果是： 将这个元素节点的 `title` attribute 和 Vue 实例的 `message` property 保持一致。
+
+
+
