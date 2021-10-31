@@ -15,7 +15,12 @@ categories:
 #  Vue的基本使用
 
 ```
-https://cn.vuejs.org/v2/guide/
+简单入门教程
+	https://cn.vuejs.org/v2/guide/
+API
+	https://cn.vuejs.org/v2/api/
+
+在这里我就先进行一个简单的教程的学习。不过于深入了解。
 ```
 
 
@@ -111,6 +116,128 @@ data：
 ```
 
 ​		这里 v-bind 是 Vue 提供的 `attribute `。它可以绑定元素原有的 `attribute` 。这个指令的效果是： 将这个元素节点的 `title` attribute 和 Vue 实例的 `message` property 保持一致。
+
+​		可以通过使用 app.message = 'new'; 可以发现，内容也随之更新。
+
+
+
+## 条件与循环
+
+### v-if
+
+```
+<div id="app-3">
+  <p v-if="seen">现在你看到我了</p>
+</div>
+
+
+var app3 = new Vue({
+  el: '#app-3',
+  data: {
+    seen: true
+  }
+})
+
+这里设置的 seen ， 设置为 true ，就会显示。设置为 false ，就不会显示。
+```
+
+​		可以通过设置 v-if 来进行这个标签的显示和隐藏。此外，Vue 也提供一个强大的过渡效果系统，可以在 Vue 插入/更新/移除元素时自动应用[过渡效果](https://cn.vuejs.org/v2/guide/transitions.html)。
+
+​		这个过渡效果，我们后续在讲。
+
+​		`v-if` 可以控制一个标签的显示和隐藏，还有 `v-show` 也有一样的效果。
+
+**区别：**
+
+* ```
+  https://cn.vuejs.org/v2/guide/conditional.html#v-if-vs-v-show
+  ```
+
+* `v-if` 也是**惰性的**：如果在初始渲染时条件为假，则什么也不做——直到条件第一次变为真时，才会开始渲染条件块。
+* 相比之下，`v-show` 就简单得多——不管初始条件是什么，元素总是会被渲染，并且只是简单地基于 CSS 进行切换。
+* 如果需要非常频繁地切换，则使用 `v-show` 较好；如果在运行时条件很少改变，则使用 `v-if` 较好。
+
+
+
+### v-for
+
+```
+https://cn.vuejs.org/v2/api/#v-for
+```
+
+​		`v-for` 指令可以绑定数组的数据来渲染一个项目列表：
+
+```
+<div id="app-4">
+  <ol>
+    <li v-for="todo in todos">
+      {{ todo.text }}
+    </li>
+  </ol>
+</div>
+
+
+var app4 = new Vue({
+  el: '#app-4',
+  data: {
+    todos: [
+      { text: '学习 JavaScript' },
+      { text: '学习 Vue' },
+      { text: '整个牛项目' }
+    ]
+  }
+})
+
+循环。 v-for="item in items"，  会循环items，赋值给 item。
+```
+
+**此外：**
+
+​	在使用 **v-if** 搭配 v-for 时，**v-for** 的优先级会高于 **v-if**。
+
+```
+<li v-for="todo in todos" v-if="todo.flag">
+```
+
+​		在控制台里，输入 `app4.todos.push({ text: '新项目' })`，你会发现列表最后添加了一个新项目。
+
+**注意：**
+
+​	这里使用了 **push**， 方式添加了新项目，页面发生了改变，但是如果是 app4.todos[4] = xxx， 这样就不会发生页面的改变，这里是因为Vue 响应式的原因，至于原理，我们后续在讲解。想要提前知道的可以了解一下，Object.defineProperty()。
+
+
+
+## 处理用户输入
+
+​		用户和应用的交互，可以使用 **v-on** 指令来添加一个事件的监听器
+
+这里的 v-on，就代表了 on
+
+```
+<button v-on:click="reverseMessage">反转消息</button>
+
+<button onclick="reverseMessage()">反转消息</button>
+```
+
+```
+var app5 = new Vue({
+  el: '#app-5',
+  data: {
+    message: 'Hello Vue.js!'
+  },
+  methods: {
+    reverseMessage: function () {
+      this.message = this.message.split('').reverse().join('')
+    }
+  }
+})
+```
+
+​		这里新添加了一个 **methods** 的对象，里面存放的是方法。如果是使用 **Vue** 的属性 **attribute**， **v-on** ，来进行的绑定方法，那么就需要将方法写在这个methods 里面。不写在 methods 里面的方法是没有效果的。
+
+​		其次，这里面建议不要使用 箭头函数，因为箭头函数 的this指向是和 当前的上下文 相关的，所以在箭头函数里面使用不了data的方法。箭头函数的指向是全局。
+
+​		在这里，我们只需要写上逻辑，不需要操作DOM，这个就是 MVVM 中， Vue 的 VM，我们只需要在 M和V 即可。
 
 
 
