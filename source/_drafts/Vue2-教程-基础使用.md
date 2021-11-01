@@ -25,6 +25,14 @@ API
 
 
 
+# 介绍
+
+```
+https://cn.vuejs.org/v2/guide/index.html
+```
+
+
+
 ## 引入
 
 ​		这里我们使用 script 进行引入
@@ -237,7 +245,104 @@ var app5 = new Vue({
 
 ​		其次，这里面建议不要使用 箭头函数，因为箭头函数 的this指向是和 当前的上下文 相关的，所以在箭头函数里面使用不了data的方法。箭头函数的指向是全局。
 
-​		在这里，我们只需要写上逻辑，不需要操作DOM，这个就是 MVVM 中， Vue 的 VM，我们只需要在 M和V 即可。
+​		在这里，我们只需要写上逻辑，不需要操作DOM，这个就是 MVVM 中， Vue 的 VM，我们只需要在 M和V 上进行操作即可。
 
 
+
+## v-model 实现双向绑定
+
+​		v-bind，可以实现单向的绑定，就是指可以通过修改data数据来进行页面的修改。
+
+​		但是，如果是对于一个 input 的输入框呢？
+
+​		我们可以将 data 数据绑定到输入框作为一个初始值。
+
+​		但是我们可以在对输入框进行输入时，同时修改 data 的数据吗。显然是不行的。所以就有了 v-model
+
+​		v-model ，它可以进行数据的双向绑定，不但用户的输入会修改 data， data 的变化也会影响视图。
+
+```
+<input v-model="message">
+```
+
+​		通过这个我们 可以看出，v-model 没有说使用value，还是什么，但是却有效果，这里是因为 v-model 会根据控件的类型自动选取正确的方法来更新。限制：	input， select， textarea， components
+
+```
+https://cn.vuejs.org/v2/api/#v-model
+```
+
+
+
+## 组件化应用构建
+
+​		Vue 的另一个重要的概念就是 **组件化** 。几乎任意应用界面都可以抽象为一个组件树。
+
+​		在 Vue 中注册一个组件
+
+```
+// 定义名为 todo-item 的新组件
+Vue.component('todo-item', {
+  template: '<li>这是个待办项</li>'
+})
+
+var app = new Vue(...)
+```
+
+**示例：**
+
+```
+<div id="app-6">
+  <my-item></my-item>
+</div>
+
+
+  Vue.component('my-item', {
+    template: '<li>这是个待办项</li>'
+  });
+
+  var app6 = new Vue({ el: '#app-6' })
+```
+
+**注意点：**
+
+* 使用的方式是，需要在 new 的实例的 Vue 的内部进行调用，因为在 实例内部，你写的方式才会被 Vue 所编译，不然是不会被 Vue 编译的。
+
+* 其次，注册的组件需要在你 new 的实例前面，因为你在编译组件的时候要使用自定义的组件。所以，如果不在之前进行解析的话，就解析不了了。
+
+
+
+## 组件传值
+
+```
+<div id="app-6">
+  <my-item :todo="message"></my-item>
+</div>
+
+
+Vue.component('my-item', {
+  props: ['todo'],
+  template: '<li>这是个待办项 {{ todo }}</li>',
+});
+
+var app6 = new Vue({
+  el: '#app-6',
+  data: {
+  	message: false
+  }
+})
+```
+
+​		这里， props 是代表了获取到组件属性传递过来的值，在组件使用时，添加属性，这个属性是和 props 里面的名字相等。这里就是 todo， 其次， **:todo**，是一个语法糖，代表了 **v-bind:todo**，所以就会把 message 的值传递给 todo，然后再传递给 my-item。
+
+
+
+# Vue实例
+
+```
+https://cn.vuejs.org/v2/guide/instance.html
+```
+
+
+
+## 创建一个Vue实例
 
