@@ -346,3 +346,140 @@ https://cn.vuejs.org/v2/guide/instance.html
 
 ## 创建一个Vue实例
 
+​		每个 Vue 应用都是通过用 `Vue` 函数创建一个新的 **Vue 实例**开始的：
+
+```
+var vm = new Vue({
+  // 选项
+})
+```
+
+​		虽然没有完全遵循 [MVVM 模型](https://zh.wikipedia.org/wiki/MVVM)，但是 Vue 的设计也受到了它的启发。因此在文档中经常会使用 `vm` (ViewModel 的缩写) 这个变量名表示 Vue 实例。
+
+​		至于为什么 Vue 没有完全遵循 MVVM 的原因是：Vue 中有一个属性，ref，这个属性可以拿到 DOM 对象，直接操作视图，所以违背了 MVVM。
+
+​		在创建一个 Vue 实例时，你可以传入一个 [选项对象]([https://cn.vuejs.org/v2/api/#%E9%80%89%E9%A1%B9-%E6%95%B0%E6%8D%AE](https://cn.vuejs.org/v2/api/#选项-数据)) (data，methods...)。通过这些选项对象来创建你想要的行为。
+
+​		一个 Vue 应用由一个通过 `new Vue` 创建的**根 Vue 实例**，以及可选的嵌套的、可复用的组件树组成。
+
+
+
+## 数据与方法
+
+​		当一个 Vue 实例被创建时，它将 `data` 对象中的所有的 property 加入到 Vue 的**响应式系统**中。当这些 property 的值发生改变时，视图将会产生“响应”，即匹配更新为新的值。
+
+​		大致就可以理解为，需要将数据放在了 data 里面，Vue 就会自动创建响应式。
+
+```
+// 我们的数据对象
+var data = { a: 1 }
+
+// 该对象被加入到一个 Vue 实例中
+var vm = new Vue({
+  data: data
+})
+
+// 获得这个实例上的 property
+// 返回源数据中对应的字段
+vm.a == data.a // => true
+
+// 设置 property 也会影响到原始数据
+vm.a = 2
+data.a // => 2
+
+// ……反之亦然
+data.a = 3
+vm.a // => 3
+```
+
+​		通过上面我们可以知道，data的数据是直接可以通过 实例的返回来直接获取，数据是直接暴露于实例的顶层。理所当然，methods 的方法也是一样，所以我们会思考，如果方法名和数据名重合会怎么办。
+
+```
+  var app6 = new Vue({
+    el: '#app-6',
+    data: {
+      message: false
+    },
+    methods: {
+      message() {
+        console.log(1);
+      }
+    },
+  })
+  
+通过上面的案例可以看出，方法名是和 data 名称重合，所以在 data 已经创建了数据之后，方法创建会抛出异常。方法创建失败。
+```
+
+```
+  而如果是一个普通的对象，后面的会将前面的覆盖掉。
+  
+  let obj = {
+    a: 1,
+    a() {
+      console.log(2);
+    }
+  }
+  console.log(obj);
+```
+
+​		其次
+
+```
+使用 vm.b = 1;
+这种后续添加数据的方式是不会变成响应式的。
+以及，使用了 Object.freeze() 也会阻止修改现有的 property，也意味着响应系统无法再追踪变化。
+```
+
+​		除了数据 property，Vue 实例还暴露了一些有用的实例 property 与方法。它们都有前缀 `$`，以便与用户定义的 property 区分开来。
+
+```
+var data = { a: 1 }
+var vm = new Vue({
+  el: '#example',
+  data: data
+})
+
+vm.$data === data // => true
+vm.$el === document.getElementById('example') // => true
+
+// $watch 是一个实例方法
+vm.$watch('a', function (newValue, oldValue) {
+  // 这个回调将在 `vm.a` 改变后调用
+})
+```
+
+​		你可以在 [API 参考](https://cn.vuejs.org/v2/api/#实例-property)中查阅到完整的实例 property 和方法的列表。
+
+
+
+## 实例生命周期钩子
+
+​		生命周期钩子简单来说就是一个回调函数。在 Vue 在执行到每个过程的时候也会执行这些生命周期的钩子。
+
+​		**举个栗子：**
+
+```
+new Vue({
+  data: {
+    a: 1
+  },
+  created: function () {
+    // `this` 指向 vm 实例
+    console.log('a is: ' + this.a)
+  }
+})
+// => "a is: 1"
+
+在 created 钩子可以用来在一个实例被创建之后执行代码：
+```
+
+**注意：**
+
+> 不要在选项 property 或回调上使用[箭头函数](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Functions/Arrow_functions)，比如 `created: () => console.log(this.a)` 或 `vm.$watch('a', newValue => this.myMethod())`。因为箭头函数并没有 `this`，`this` 会作为变量一直向上级词法作用域查找，直至找到为止，经常导致 `Uncaught TypeError: Cannot read property of undefined` 或 `Uncaught TypeError: this.myMethod is not a function` 之类的错误。
+
+
+
+## 生命周期图示
+
+![lifecycle](Vue2-教程-基础使用/lifecycle.png)
+
