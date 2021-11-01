@@ -483,3 +483,442 @@ new Vue({
 
 ![lifecycle](Vue2-教程-基础使用/lifecycle.png)
 
+
+
+# 模板语法
+
+```
+https://cn.vuejs.org/v2/guide/syntax.html
+```
+
+## 插值
+
+**文本：**
+
+​		数据绑定最常见的形式就是使用“Mustache”语法 (双大括号) 的文本插值：
+
+```
+<span>Message: {{ msg }}</span>
+```
+
+这里 msg 会替代为 数据对象的 msg。并且还带有响应式的功能。
+
+​		通过使用 [v-once 指令](https://cn.vuejs.org/v2/api/#v-once)，你也能执行一次性地插值，当数据改变时，插值处的内容不会更新。但请留心这会影响到该节点上的其它数据绑定：
+
+```
+<span v-once>这个将不会改变: {{ msg }}</span>
+```
+
+
+
+**原始HTML：**
+
+​		双大括号会将数据解释为普通文本，而非 HTML 代码。为了输出真正的 HTML，你需要使用 [`v-html` 指令](https://cn.vuejs.org/v2/api/#v-html)：
+
+```
+<span v-html="rawHtml"></span>
+```
+
+​		会将 span 的内容替换为 rawHtml。并且在里面不会解析 proterty。
+
+> 你的站点上动态渲染的任意 HTML 可能会非常危险，因为它很容易导致 [XSS 攻击](https://en.wikipedia.org/wiki/Cross-site_scripting)。请只对可信内容使用 HTML 插值，**绝不要**对用户提供的内容使用插值。
+
+
+
+**Attribute：（属性）**
+
+​		Mustache 语法不能作用在 HTML 标签的属性上，所以要使用 v-bind 指令。
+
+```
+<div v-bind:id="dynamicId"></div>
+
+对于同时使用了 v-bind:id 和 id 的。我们可以发现，谁在后面，其结果就是谁。
+```
+
+​		对于布尔值的 attribute，原生的HTML中，只要存在就意味着值为 true，而 v-bind，工作起来当值为 false，null等，甚至不会渲染。
+
+
+
+**使用 JavaScript 表达式：**
+
+​		对于所有的数据绑定，Vue.js 都提供了完全的 JavaScript 表达式支持。
+
+```
+{{ number + 1 }}
+
+{{ ok ? 'YES' : 'NO' }}
+
+{{ message.split('').reverse().join('') }}
+
+<div v-bind:id="'list-' + id"></div>
+```
+
+
+
+## 指令
+
+​		指令 (Directives) 是带有 `v-` 前缀的特殊 attribute。
+
+**参数：**
+
+​		一些指令能够接收一个“参数”，在指令名称之后以冒号表示。例如，`v-bind` 指令可以用于响应式地更新 HTML attribute：
+
+```
+<a v-bind:href="url">...</a>
+
+此时这个url是和数据的url是绑定的。
+```
+
+​		`v-on` 指令，它用于监听 DOM 事件：
+
+```
+<a v-on:click="doSomething">...</a>
+同时也有 mouseover 等等。
+```
+
+**注意：**
+
+​		使用 v-on 指令监听 DOM 事件，原生的 onclick 方法会先于 v-on 进行监听，其次这个 v-on 里面的方法，既可以是 methods 的，也可以是 data 的。但是建议写在 methods 中。
+
+```
+<div id="app-6">
+  <button @click="test1" onclick="console.log(1);">Button</button>
+</div>
+//其中这里这个 @ 代表了 v-on 的语法糖，我们后续会讲。
+
+	let obj = {
+    message: true,
+    test1() {
+      console.log(3);
+    }
+  }
+
+  var app6 = new Vue({
+    el: '#app-6',
+    data: obj,
+    methods: {
+      test() {
+        console.log(2);
+      }
+    }
+  })
+```
+
+
+
+**动态参数： 2.6.0新增**
+
+​		可以用方括号括起来的 JavaScript 表达式作为一个指令的参数：
+
+```
+<!--
+注意，参数表达式的写法存在一些约束，如之后的“对动态参数表达式的约束”章节所述。
+-->
+<a v-bind:[attributeName]="url"> ... </a>
+
+<a v-on:[eventName]="doSomething"> ... </a>
+@[]，也可以。
+```
+
+​		这里的 `attributeName` 会被作为一个 JavaScript 表达式进行动态求值，求得的值将会作为最终的参数来使用。这里的Vue实例中有 data property attributeName，值为 href，则就等价于 v-bind:href="url"
+
+​	**对动态参数的值的约束**
+
+​		动态参数预期会求出一个字符串，异常情况下值为 `null`。这个特殊的 `null` 值可以被显性地用于移除绑定。任何其它非字符串类型的值都将会触发一个警告。
+
+​	**对动态参数表达式的约束**
+
+​		动态参数表达式有一些语法约束，因为某些字符，如空格和引号，放在 HTML attribute 名里是无效的。例如：
+
+```
+<!-- 这会触发一个编译警告 -->
+<a v-bind:['foo' + bar]="value"> ... </a>
+
+使用引号会无法编译。
+并且使用了空格也会无法编译。
+```
+
+​		变通的办法是使用没有空格或引号的表达式，或用计算属性替代这种复杂表达式。
+
+​		在 DOM 中使用模板时 (直接在一个 HTML 文件里撰写模板)，还需要避免使用大写字符来命名键名，因为浏览器会把 attribute 名全部强制转为小写：
+
+```
+<!--
+在 DOM 中使用模板时这段代码会被转换为 `v-bind:[someattr]`。
+除非在实例中有一个名为“someattr”的 property，否则代码不会工作。
+-->
+<a v-bind:[someAttr]="value"> ... </a>
+```
+
+
+
+**修饰符：**
+
+​		修饰符 (modifier) 是以半角句号 `.` 指明的特殊后缀，用于指出一个指令应该以特殊方式绑定。例如，`.prevent` 修饰符告诉 `v-on` 指令对于触发的事件调用 `event.preventDefault()`：
+
+​		与之相应的还有 `.laze` `.once` 等等。我们后续进行讲解。
+
+
+
+## 缩写 语法糖
+
+**v-bind 缩写**：
+
+```
+<!-- 完整语法 -->
+<a v-bind:href="url">...</a>
+
+<!-- 缩写 -->
+<a :href="url">...</a>
+
+<!-- 动态参数的缩写 (2.6.0+) -->
+<a :[key]="url"> ... </a>
+```
+
+
+
+**v-on 缩写：**
+
+```
+<!-- 完整语法 -->
+<a v-on:click="doSomething">...</a>
+
+<!-- 缩写 -->
+<a @click="doSomething">...</a>
+
+<!-- 动态参数的缩写 (2.6.0+) -->
+<a @[event]="doSomething"> ... </a>
+```
+
+
+
+# 计算属性和侦听器
+
+```
+https://cn.vuejs.org/v2/guide/computed.html
+```
+
+
+
+## 计算属性
+
+​		简单来说，就是将逻辑更深层的解耦，比如：
+
+```
+{{ message.split('').reverse().join('') }}
+```
+
+​		在模板中放入太多的逻辑会让模板过重且难以维护。
+
+​		在这个地方，模板不再是简单的声明式逻辑。你必须看一段时间才能意识到，这里是想要显示变量 `message` 的翻转字符串。当你想要在模板中的多处包含此翻转字符串时，就会更加难以处理。
+
+​		所以，对于任何复杂逻辑，你都应当使用**计算属性**。
+
+​		我认为，从一个开发来看，对于一个表达式，如果以后会有多个地方进行相同的逻辑的使用，就应当使用计算属性，方便维护。
+
+
+
+### 基础例子
+
+```
+<div id="app-6">
+  {{ message }}
+  <br>
+  {{ reversedMessage }}
+</div>
+```
+
+```
+  const vm = new Vue({
+    el: '#app-6',
+    data: {
+      message: 'true',
+    },
+    computed: {
+      // 计算属性的 getter
+      reversedMessage: function () {
+        // `this` 指向 vm 实例
+        return this.message.split('').reverse().join('')
+      }
+    },
+  })
+```
+
+​		这里我们声明了一个计算属性 `reversedMessage`。我们提供的函数将用作 property `vm.reversedMessage` 的 getter 函数
+
+​		计算属性默认是的方法是一个getter 方法， 就像是使用了 `Object.defineProperty` 的getter一样进行了操作。
+
+
+
+## 计算属性缓存 VS 方法
+
+​		我们也可以发现，可以在插值表达式中使用方法来获取同样的效果。
+
+```
+<p>{{ reversedMessage() }}</p>
+
+methods: {
+  reversedMessage: function () {
+    return this.message.split('').reverse().join('')
+  }
+}
+```
+
+​		首先，对于结果来说是完全相同的。不同的地方在于，**计算属性是基于它们的响应式依赖进行缓存的**。意思就是说，只有相关的响应式依赖发生了改变，他们才会重新求值。没有发生改变，多次使用计算属性会立即返回之前的结果。
+
+​		**举个栗子：**
+
+```
+<div id="app-6">
+  {{ message }}
+  <br>
+  {{ reversedMessage }}
+  <br>
+  {{ reversedMessage }}
+  <br>
+  {{ reversedMessage }}
+</div>
+
+
+  const vm = new Vue({
+    el: '#app-6',
+    data: {
+      message: 'true',
+    },
+    computed: {
+      // 计算属性的 getter
+      reversedMessage: function () {
+        // `this` 指向 vm 实例
+        console.log(1);
+        return this.message.split('').reverse().join('')
+      }
+    },
+  })
+```
+
+​		我这里使用了很多个插值表达式，但是发现控制台的输出，只有一个，这里代表了后续是直接使用的之前的计算结果。
+
+​		其次，在值发生变化之时，也只输出了一次。因此计算属性的缓存效果则比方法有了更好的性能。
+
+​		当然，如果不希望有缓存的存在，可以使用方法来替代。
+
+
+
+## 计算属性 VS 侦听属性
+
+​		Vue 提供了一种更通用的方式来观察和响应 Vue 实例上的数据变动：**侦听属性**。 `watch`  。
+
+​		侦听属性 和 计算属性的不同
+
+```
+watch: {
+  firstName: function (val) {
+  	this.fullName = val + ' ' + this.lastName
+  },
+  lastName: function (val) {
+  	this.fullName = this.firstName + ' ' + val
+  }
+},
+computed: {
+  fullName: function () {
+  	return this.firstName + ' ' + this.lastName
+  }
+}
+```
+
+​		从上面可以看出，侦听属性(watch)的特点是，当一个属性发生改变后，调用的方法。
+
+​		其次，需要对其进行初始化，因为在最开始侦听属性不会进行调用。
+
+​		最后，这个侦听属性的执行时机，我们通过一个简单的死循环就可以看出。侦听属性在 DOM 的变化之前。但是处于值的变化之后。起码下面这个情况满足。这个说法。
+
+```
+watch: {
+  message: function (val) {
+  console.log(this.message);
+  while (true) {
+  	console.log(this.message);
+  }
+  	this.reversedMessage = val + ' --- ';
+  }
+},
+```
+
+
+
+## 计算属性的setter
+
+​		默认计算属性只有 getter，不过在需要时你也可以提供一个 setter。
+
+```
+computed: {
+  fullName: {
+    // getter
+    get: function () {
+      return this.firstName + ' ' + this.lastName
+    },
+    // setter
+    set: function (newValue) {
+      var names = newValue.split(' ')
+      this.firstName = names[0]
+      this.lastName = names[names.length - 1]
+    }
+  }
+}
+```
+
+​		在运行 `vm.fullName = 'John Doe'` 时，setter 会被调用，`vm.firstName` 和 `vm.lastName` 也会相应地被更新。
+
+​		当然，如果你这样写，只能说你是小机灵鬼了，一直调用了 setter 方法导致溢出。
+
+```
+set: function (newValue) {
+  console.log(newValue);
+  this.reversedMessage += '1';
+}
+```
+
+​		同时我们也可以使用一些简单的方式查看这个 setter 的执行时机。通过下面这个方式，我们发现了，setter 的执行在值的变化之前。
+
+```
+computed: {
+  // 计算属性的 getter
+  reversedMessage: {
+    get: function () {
+      // `this` 指向 vm 实例
+      console.log(1);
+      return this.message.split('').reverse().join('')
+    },
+    set: function (newValue) {
+      console.log(this.reversedMessage, newValue);
+      while (true) {
+      console.log(this.reversedMessage);
+    };
+  }
+},
+```
+
+
+
+## 侦听器
+
+> ​		虽然计算属性在大多数情况下更合适，但有时也需要一个自定义的侦听器。这就是为什么 Vue 通过 `watch` 选项提供了一个更通用的方法，来响应数据的变化。当需要在数据变化时执行异步或开销较大的操作时，这个方式是最有用的。
+
+​		简单来说就是对于一个异步，和一个开销大的操作时，监听器比较合适。
+
+​		异步操作，限制访问频率(防抖)，设置中间状态等。
+
+
+
+# Class 与 Style 绑定
+
+```
+https://cn.vuejs.org/v2/guide/class-and-style.html
+```
+
+​		在将 `v-bind` 用于 `class` 和 `style` 时，Vue.js 做了专门的增强。表达式结果的类型除了字符串之外，还可以是对象或数组。
+
+
+
+## 绑定 HTML Class
+
