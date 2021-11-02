@@ -63,11 +63,11 @@ https://cn.vuejs.org/v2/guide/index.html
 
 ## 声明式渲染
 
-### Mustache 语法 {{ valueName }}
+### Mustache 语法 { { valueName }}
 
 ```
 <div id="app">
-  {{ message }}
+  { { message }}
 </div>
 
 <!-- 开发环境版本，包含了有帮助的命令行警告 -->
@@ -119,7 +119,7 @@ data：
 
 ```
 <span class="app" v-bind:title="message">
-  {{ message }}
+  { { message }}
 </span>
 ```
 
@@ -179,7 +179,7 @@ https://cn.vuejs.org/v2/api/#v-for
 <div id="app-4">
   <ol>
     <li v-for="todo in todos">
-      {{ todo.text }}
+      { { todo.text }}
     </li>
   </ol>
 </div>
@@ -321,7 +321,7 @@ var app = new Vue(...)
 
 Vue.component('my-item', {
   props: ['todo'],
-  template: '<li>这是个待办项 {{ todo }}</li>',
+  template: '<li>这是个待办项 { { todo }}</li>',
 });
 
 var app6 = new Vue({
@@ -498,7 +498,7 @@ https://cn.vuejs.org/v2/guide/syntax.html
 ​		数据绑定最常见的形式就是使用“Mustache”语法 (双大括号) 的文本插值：
 
 ```
-<span>Message: {{ msg }}</span>
+<span>Message: { { msg }}</span>
 ```
 
 这里 msg 会替代为 数据对象的 msg。并且还带有响应式的功能。
@@ -506,7 +506,7 @@ https://cn.vuejs.org/v2/guide/syntax.html
 ​		通过使用 [v-once 指令](https://cn.vuejs.org/v2/api/#v-once)，你也能执行一次性地插值，当数据改变时，插值处的内容不会更新。但请留心这会影响到该节点上的其它数据绑定：
 
 ```
-<span v-once>这个将不会改变: {{ msg }}</span>
+<span v-once>这个将不会改变: { { msg }}</span>
 ```
 
 
@@ -544,11 +544,11 @@ https://cn.vuejs.org/v2/guide/syntax.html
 ​		对于所有的数据绑定，Vue.js 都提供了完全的 JavaScript 表达式支持。
 
 ```
-{{ number + 1 }}
+{ { number + 1 }}
 
-{{ ok ? 'YES' : 'NO' }}
+{ { ok ? 'YES' : 'NO' }}
 
-{{ message.split('').reverse().join('') }}
+{ { message.split('').reverse().join('') }}
 
 <div v-bind:id="'list-' + id"></div>
 ```
@@ -705,7 +705,7 @@ https://cn.vuejs.org/v2/guide/computed.html
 ​		简单来说，就是将逻辑更深层的解耦，比如：
 
 ```
-{{ message.split('').reverse().join('') }}
+{ { message.split('').reverse().join('') }}
 ```
 
 ​		在模板中放入太多的逻辑会让模板过重且难以维护。
@@ -722,9 +722,9 @@ https://cn.vuejs.org/v2/guide/computed.html
 
 ```
 <div id="app-6">
-  {{ message }}
+  { { message }}
   <br>
-  {{ reversedMessage }}
+  { { reversedMessage }}
 </div>
 ```
 
@@ -755,7 +755,7 @@ https://cn.vuejs.org/v2/guide/computed.html
 ​		我们也可以发现，可以在插值表达式中使用方法来获取同样的效果。
 
 ```
-<p>{{ reversedMessage() }}</p>
+<p>{ { reversedMessage() }}</p>
 
 methods: {
   reversedMessage: function () {
@@ -770,13 +770,13 @@ methods: {
 
 ```
 <div id="app-6">
-  {{ message }}
+  { { message }}
   <br>
-  {{ reversedMessage }}
+  { { reversedMessage }}
   <br>
-  {{ reversedMessage }}
+  { { reversedMessage }}
   <br>
-  {{ reversedMessage }}
+  { { reversedMessage }}
 </div>
 
 
@@ -921,4 +921,374 @@ https://cn.vuejs.org/v2/guide/class-and-style.html
 
 
 ## 绑定 HTML Class
+
+### 对象语法
+
+```
+v-bind:class="{ active: isActive, 'text-danger': hasError }"
+```
+
+​		这样，就会根据 后面的真值来判断前面这个类是否能存在。并且这里 active 是一个字符串，就算这个 active 和后面的一个 data 数据重名，最终渲染的还是一个字符串。如何能让 active 也变成一个变量类型，
+
+```
+<div v-bind:class="{ [message]: flag }"></div>
+```
+
+​		这里使用了动态绑定，所以 message  会从data里面进行查找。找不到则为 undefined 的字符串。并且可以使用 .undefined 来进行操作。对于不是字符串的，会转为字符串处理。
+
+​		并且绑定的数据对象不必内联定义在模板里。
+
+```
+<div v-bind:class="classObject"></div>
+
+data: {
+  classObject: {
+    active: true,
+    'text-danger': false
+  }
+}
+```
+
+​		如果写在 data 里面，我还不知道如何将类名动态绑定。并且后面的 true 和 false 都是写死的那种，只能在后续使用方法改变。
+
+```
+    computed: {
+      classObject: function () {
+        return {
+          [this.message]: this.flag
+        }
+      }
+    },
+```
+
+​		如果写在计算属性里面，那么类名和真值都可以通过 this 进行获取。类名还是一样通过 [] 获取。不加上就会直接当成一个字符串。
+
+
+
+### 数组语法
+
+​		我们可以把一个数组传给 `v-bind:class`，以应用一个 class 列表
+
+```
+<div v-bind:class="[activeClass, errorClass]"></div>
+
+data: {
+  activeClass: 'active',
+  errorClass: 'text-danger'
+}
+```
+
+​		对于不是字符串的，不会被显示，需要是字符串类型才会显示。
+
+​		同时，也能写三元表达式
+
+```
+<div v-bind:class="[isActive ? activeClass : '', errorClass]"></div>
+```
+
+​		在数组语法中也可以使用对象语法：
+
+```
+<div v-bind:class="[{ active: isActive }, errorClass]"></div>
+```
+
+
+
+### 在组件上
+
+​		当在一个自定义组件上使用 `class` property 时，这些 class 将被添加到该组件的根元素上面。这个元素上已经存在的 class 不会被覆盖。
+
+```
+Vue.component('my-component', {
+  template: '<p class="foo bar">Hi</p>'
+})
+
+<my-component class="baz boo"></my-component>
+
+<p class="foo bar baz boo">Hi</p>
+```
+
+​		在渲染的时候，重复的类名不会被消除。当然，最终的渲染结果还是看CSS的权重级别。
+
+
+
+## 绑定内联样式
+
+### 对象语法
+
+​		`v-bind:style` 的对象语法十分直观——看着非常像 CSS，但其实是一个 JavaScript 对象。CSS property 名可以用驼峰式 (camelCase) 或短横线分隔 (kebab-case，记得用引号括起来) 来命名
+
+```
+<div v-bind:style="{ color: activeColor, fontSize: fontSize + 'px' }"></div>
+
+<div v-bind:style="{ color: activeColor, 'font-size': fontSize + 'px' }"></div>
+
+data: {
+  activeColor: 'red',
+  fontSize: 30
+}
+```
+
+​		当然也能绑定到一个样式对象。大致还是和上面的要求一样。
+
+
+
+### 数组语法
+
+​		`v-bind:style` 的数组语法可以将多个样式对象应用到同一个元素上：
+
+```
+<div v-bind:style="[activeColor]">123</div>
+
+activeColor: {
+	fontSize: '30px'
+},
+```
+
+​		当然，也能将其作为一个数组加对象整合为一个返回值，绑定到一个样式对象。
+
+
+
+### 自动添加前缀
+
+​		当 `v-bind:style` 使用需要添加[浏览器引擎前缀](https://developer.mozilla.org/zh-CN/docs/Glossary/Vendor_Prefix)的 CSS property 时，如 `transform`，Vue.js 会自动侦测并添加相应的前缀。
+
+​		其次，对于使用了 v-bind:style 和 style 的，会以 v-bind:style 为主。
+
+
+
+### 多重值 （2.3.0）
+
+​		从 2.3.0 起你可以为 `style` 绑定中的 property 提供一个包含多个值的数组，常用于提供多个带前缀的值
+
+```
+<div :style="{ display: ['-webkit-box', '-ms-flexbox', 'flex'] }"></div>
+```
+
+​		这样写只会渲染数组中最后一个被浏览器支持的值。在本例中，如果浏览器支持不带浏览器前缀的 flexbox，那么就只会渲染 `display: flex`。
+
+​		**意思就是说**，对于这样的一个值的数组，我们会从后往前进行赋值，直到遇到浏览器可以支持的值，例如本例来说，先判断，flex，再判断 -ms-flexbox，最后再判断 -webkit-box。
+
+
+
+# 条件渲染
+
+```
+https://cn.vuejs.org/v2/guide/conditional.html
+```
+
+
+
+## v-if
+
+​		`v-if` 指令用于条件性地渲染一块内容。这块内容只会在指令的表达式返回 truthy 值的时候被渲染。
+
+​		也可以用 `v-else` 添加一个“else 块”：
+
+```
+<h1 v-if="awesome">Vue is awesome!</h1>
+<h1 v-else>Oh no 😢</h1>
+```
+
+
+
+### 在 `<template>` 元素上使用 `v-if` 条件渲染分组
+
+​		因为 `v-if` 是一个指令，所以必须将它添加到一个元素上。但是如果想切换多个元素呢？此时可以把一个 `<template>` 元素当做不可见的包裹元素，并在上面使用 `v-if`。最终的渲染结果将不包含 `<template>` 元素。
+
+```
+<template v-if="ok">
+  <h1>Title</h1>
+  <p>Paragraph 1</p>
+  <p>Paragraph 2</p>
+</template>
+```
+
+​		这里很好理解。首先 v-if 只能添加到一个元素上，所以我们使用了一个元素进行了包裹，然后这个 template 的一个特点就是不会显示，例如
+
+```
+<template>
+	<div>123</div>
+</template>
+
+最终的显示结果就是
+<div>123</div>
+```
+
+​		所以这个的好处在于，既能产生包裹，还能不将其 DOM 的结构进行变化。
+
+
+
+### v-else
+
+​		你可以使用 `v-else` 指令来表示 `v-if` 的“else 块”
+
+​		`v-else` 元素必须紧跟在带 `v-if` 或者 `v-else-if` 的元素的后面，否则它将不会被识别。
+
+```
+<div v-if="Math.random() > 0.5">
+  Now you see me
+</div>
+<div v-else>
+  Now you don't
+</div>
+```
+
+
+
+### v-else-if（2.1.0）
+
+​		`v-else-if`，顾名思义，充当 `v-if` 的“else-if 块”，可以连续使用
+
+​		类似于 `v-else`，`v-else-if` 也必须紧跟在带 `v-if` 或者 `v-else-if` 的元素之后。
+
+```
+<div v-if="type === 'A'">A</div>
+<div v-else-if="type === 'B'">B</div>
+<div v-else>Not A/B/C</div>
+```
+
+
+
+### 用 `key` 管理可复用的元素
+
+​		Vue 会尽可能高效地渲染元素，通常会复用已有元素而不是从头开始渲染。这么做除了使 Vue 变得非常快之外，还有其它一些好处。
+
+```
+<template v-if="loginType === 'username'">
+  <label>Username</label>
+  <input placeholder="Enter your username">
+</template>
+<template v-else>
+  <label>Email</label>
+  <input placeholder="Enter your email address">
+</template>
+```
+
+​		那么在上面的代码中切换 `loginType` 将不会清除用户已经输入的内容。因为两个模板使用了相同的元素，`<input>` 不会被替换掉——仅仅是替换了它的 `placeholder`。
+
+
+
+​		对于上述的代码，切换了 input  的输入框，但是却对于 value 值没有发生改变。但是如果我们会发现对于类名，style等属性是会发生改变。我们同时也可以知道 value 是input输入框的值，如果是对于 DOM 元素，可以通过 value 进行获取，但是在这里，虽然使用了 value 的属性，但是只要进行输入了，value 的值也不起效果。
+
+​		但是我们同时也发现了，再切换之后，DOM 的指向没有改变。并且也发现了 value 的值在控制台的输出是有变化的。只是对于输入框的内容没有变化。个人猜测，这里input的输入和value 其实中间不是完全直接对应。输入框显示的 value 只是作为了一个最初值。但是内部的value已经发生了变化。
+
+​		当然解决这个方法很简单。
+
+*  Vue 为你提供了一种方式来表达“这两个元素是完全独立的，不要复用它们”。只需添加一个具有唯一值的 `key` attribute 即可
+
+  * ```
+    <input placeholder="Enter your username" key="username-input">
+    ```
+
+  * 这里，只需要 key 值不同即可。并且发现加了 key 值之后， DOM 获取的元素已经不会根据你的按钮发生变化，并且值也不会发生变化了，因为已经不是一个 input 框了，就算是换回来也不是一个了，因为 v-if 是直接修改了 DOM 树。
+
+  * ```
+    <template v-if="loginType === 'username'">
+      <label>Username</label>
+      <input key="a" class="a" style="color: red; font-size: 20px" placeholder="Enter your username" value="1">
+    </template>
+    <template v-else>
+      <label>Email</label>
+      <input key="b" class="b" placeholder="Enter your email address" value="2">
+    </template>
+    
+    
+    记住，这个需要放在 vue实例之后，应该是因为 template 的原因。
+    const a = document.querySelector('input.a'),
+    	b = document.querySelector('input.b');
+    function c() {
+      console.log(a);
+      console.log(a.value);
+    }
+    ```
+
+* 当然，还可以使用 v-model 将数据进行绑定，那么input输入框的显示也会跟数据有关了。并且 v-model 是进行的复用。因为 DOM 的输出是会发生变化的。并且输入框和data数据是实时绑定了的。
+
+
+
+## v-show
+
+​		另一个用于根据条件展示元素的选项是 `v-show` 指令。用法大致一样
+
+```
+<h1 v-show="ok">Hello!</h1>
+```
+
+​		同的是带有 `v-show` 的元素始终会被渲染并保留在 DOM 中。`v-show` 只是简单地切换元素的 CSS property `display`。
+
+> 注意，`v-show` 不支持 `<template>` 元素，也不支持 `v-else`。
+
+​		v-show 不支持 template 元素，意思就是说，你在 template 元素上使用 v-show，不管是 true 还是 false，template 都会显示在页面上，而如果你使用v-if就会发现，结果是不一样的。
+
+​		v-show 不支持 v-else，就如字面上来说，不支持的意思。
+
+
+
+## v-if VS v-show
+
+​		`v-if` 是“真正”的条件渲染，因为它会确保在切换过程中条件块内的事件监听器和子组件适当地被销毁和重建。
+
+​		`v-if` 也是**惰性的**：如果在初始渲染时条件为假，则什么也不做——直到条件第一次变为真时，才会开始渲染条件块。
+
+​		相比之下，`v-show` 就简单得多——不管初始条件是什么，元素总是会被渲染，并且只是简单地基于 CSS 进行切换。
+
+​		一般来说，`v-if` 有更高的切换开销，而 `v-show` 有更高的初始渲染开销。因此，如果需要非常频繁地切换，则使用 `v-show` 较好；如果在运行时条件很少改变，则使用 `v-if` 较好。
+
+​		**简单概括：**
+
+* **v-if** 是会直接和 DOM 树相关。而 **v-show** 只是简单的使用了 display:none，和渲染树相关。
+* 所以 v-if 对于切换会产生高开销，因为每次都会进行 DOM 的修改。而 v-show 会产生初始渲染的高开销，因为不管是否显示都会渲染。
+* 所以，对于频繁切换使用 v-show，对于很少改变使用 v-if。
+
+
+
+## v-if 和 v-for 一起使用
+
+> **不推荐**同时使用 `v-if` 和 `v-for`。请查阅[风格指南](https://cn.vuejs.org/v2/style-guide/#避免-v-if-和-v-for-用在一起-必要)以获取更多信息。
+
+​		当 `v-if` 与 `v-for` 一起使用时，`v-for` 具有比 `v-if` 更高的优先级。请查阅[列表渲染指南](https://cn.vuejs.org/v2/guide/list.html#v-for-with-v-if)以获取详细信息。
+
+​		通过查看了 风格指南，主要说几点：
+
+* 避免一起使用
+
+* 对于需要过滤一个列表中的项目，采用计算属性
+
+  * ```
+    v-for="user in users" v-if="user.isActive"
+    
+    可以对 user 使用一个计算属性 activeUser 使用filter过滤后返回
+    v-for="user in activeUsers"
+    
+    computed: {
+    	activeUsers: function() {
+    		return this.users.filter((user) => user.isActive);
+    	}
+    }
+    ```
+
+* 对于会直接应该被隐藏的列表，将 v-if 放在上层，不要在每次循环的时候判断
+
+  * ```
+    v-for="user in users" v-if="shouldShowUsers"
+    
+    shouldShowUsers 这是对一个 users 进行的判断，只要为 false，所有的 users都不会显示，所以这个建议放在上层
+    v-if="shouldShowUsers"
+    	v-for="user in users"
+    ```
+
+
+
+# 列表渲染
+
+```
+https://cn.vuejs.org/v2/guide/list.html
+```
+
+
+
+## 用 v-for 把一个数组对应为一组元素
+
+
 
