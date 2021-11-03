@@ -1747,7 +1747,413 @@ Vue.config.keyCodes.A = 97;
 
 ## 系统修饰键
 
+​		可以用如下修饰符来实现仅在按下相应按键时才触发鼠标或键盘事件的监听器。(2.1.0新增)
 
+```
+.ctrl
+.alt
+.shift
+.meta
+	就是Windows键盘上的那个Windows图标按钮。mac同理
+```
+
+> ​		注意：在 Mac 系统键盘上，meta 对应 command 键 (⌘)。在 Windows 系统键盘 meta 对应 Windows 徽标键 (⊞)。在 Sun 操作系统键盘上，meta 对应实心宝石键 (◆)。在其他特定键盘上，尤其在 MIT 和 Lisp 机器的键盘、以及其后继产品，比如 Knight 键盘、space-cadet 键盘，meta 被标记为“META”。在 Symbolics 键盘上，meta 被标记为“META”或者“Meta”。
+>
+
+```
+<!-- Alt + C -->
+<input v-on:keyup.alt.67="clear">
+
+<!-- Ctrl + Click -->
+<div v-on:click.ctrl="doSomething">Do something</div>
+```
+
+**注意：**
+
+* 使用系统修饰键对于 @keyup.67.ctrl 和 @keyup.ctrl.67 是一样的。不会有先后顺序。
+* 请注意修饰键与常规按键不同，在和 `keyup` 事件一起用时，事件触发时修饰键必须处于按下状态。换句话说，只有在按住 `ctrl` 的情况下释放其它按键，才能触发 `keyup.ctrl`。而单单释放 `ctrl` 也不会触发事件。如果你想要这样的行为，请为 `ctrl` 换用 `keyCode`：`keyup.17`。17代表了ctrl
+* **@keyup.17.67** 这个代表了按这两个其中一个都有效
+* 系统修饰键可以使用多个。
+
+
+
+### .exact 修饰符（2.5.0新增）
+
+​		`.exact` 修饰符允许你控制由精确的系统修饰键组合触发的事件。
+
+​		**作用**：用于**精确**控制系统修饰键按键的修饰符。主要在于精确两个字。并且是对系统修饰键起作用的。
+
+```
+<input type="text" @keyup.a.up.exact="change">
+	这个里面没有系统修饰键，监听了两个按键，最终效果：没有什么区别，唯一的区别就是如果此时你按了系统修饰键将不会触发。
+	所以这个代表了<!-- 没有任何系统修饰键被按下的时候才触发 -->
+```
+
+```
+<input type="text" @keyup.ctrl.up.exact="change">
+	这个里面存在了系统修饰键 ctrl，所以效果就是必须按了 ctrl才会有用，（当然这个是系统修饰键的效果），.exact修饰符 的效果就是，系统修饰键必须只按了ctrl才有用。精确。加上系统修饰键。
+	其次.exact 修饰符没有位置的要求，和系统修饰键一样没有位置要求，
+	然后就是对于 <input type="text" @keyup.exact.ctrl.up.a="change"> 我们可以发现， 一个exact修饰符，一个ctrl系统修饰键，两个普通按键修饰符。所以最终的效果是，有且只有按了ctrl键，加上普通按键修饰符的其中一个就行。
+	<!-- 有且只有 Ctrl 被按下的时候才触发 -->
+```
+
+
+
+### 鼠标按钮修饰符（2.2.0新增）
+
+​		这些修饰符会限制处理函数仅响应特定的鼠标按钮。
+
+```
+.left
+.right
+.middle
+```
+
+​		用于点击事件，对于keyup事件不起作用，当然对于系统修饰键和.exact修饰符没有这些要求。
+
+```
+<div @click.middle.ctrl.exact="change">321</div>
+	要求是 ctrl键 + 鼠标中键才会触发。
+```
+
+
+
+## 为什么要在 HTML 中监听事件
+
+​		你可能注意到这种事件监听的方式违背了关注点分离 (separation of concern) 这个长期以来的优良传统。但不必担心，因为所有的 Vue.js 事件处理方法和表达式都严格绑定在当前视图的 ViewModel 上，它不会导致任何维护上的困难。实际上，使用 `v-on` 有几个好处：
+
+1. 扫一眼 HTML 模板便能轻松定位在 JavaScript 代码里对应的方法。
+2. 因为你无须在 JavaScript 里手动绑定事件，你的 ViewModel 代码可以是非常纯粹的逻辑，和 DOM 完全解耦，更易于测试。
+3. 当一个 ViewModel 被销毁时，所有的事件处理器都会自动被删除。你无须担心如何清理它们。
+
+
+
+**概括就是说**：虽然是在html中进行的使用监听，但是真正的处理是绑定在VM上的。其次对于v-on的好处：1.能够一眼看出方法。2.和DOM完全解耦。3.当一个VM被销毁时，所有的事件会自动清除。
+
+
+
+# 表单输入绑定
+
+```
+https://cn.vuejs.org/v2/guide/forms.html
+```
+
+
+
+## 基础用法
+
+​		你可以用 `v-model` 指令在表单 `<input>`、`<textarea>` 及 `<select>` 元素上创建双向数据绑定。它会根据控件类型自动选取正确的方法来更新元素。
+
+```
+<input v-model="message" placeholder="edit me">
+这里，我是用 v-model，并没有绑定给value，但是会自动选取正确的方法进行更新。
+```
+
+
+
+**注意：**
+
+* v-model 会忽略元素自带的value，checked等属性，而是使用Vue实例的数据作为来源。
+
+
+
+​		`v-model` 在内部为不同的输入元素使用不同的 property 并抛出不同的事件。
+
+- text 和 textarea 元素使用 `value` property 和 `input` 事件；
+- checkbox 和 radio 使用 `checked` property 和 `change` 事件；（使用的是真值方式truth）
+- select 字段将 `value` 作为 prop 并将 `change` 作为事件。
+
+
+
+> ​		对于需要使用[输入法](https://zh.wikipedia.org/wiki/输入法) (如中文、日文、韩文等) 的语言，你会发现 `v-model` 不会在输入法组合文字过程中得到更新。如果你也想处理这个过程，请使用 `input` 事件。
+
+​		你在输入框输入加上一个input事件的监听的时候就会发现。如果在输入的时候使用了中文，虽然在按键的时候发生了input事件，但是v-model的值并没有得到更新。
+
+​		但是如果是普通的input输入框的监听则会发生更新。
+
+```
+<input type="text" v-model="string" @input="change" oninput="console.log('event:    ' + event.target.value);">
+```
+
+​		并且在进行了空格之后会发生多次的更新。
+
+
+
+### 文本 和 多行文本
+
+```
+<input type="text" v-model="message">
+<textarea v-model="message"></textarea>
+```
+
+​		在文本区域插值 (`<textarea>{{text}}</textarea>`) 并不会生效，应用 `v-model` 来代替。
+
+
+
+### 复选框
+
+​		单个复选框，直接布尔值进行的判断，对于不是布尔类型的使用了truth方式。
+
+```
+<input type="checkbox" id="checkbox" v-model="checked">
+```
+
+​		对于多个复选框
+
+​		注意：复选框和单选框是通过value进行判断。
+
+```
+<input type="checkbox" id="jack" value="Jack" v-model="checkedNames">
+<label for="jack">Jack</label>
+<input type="checkbox" id="john" value="John" v-model="checkedNames">
+<label for="john">John</label>
+<input type="checkbox" id="mike" value="Mike" v-model="checkedNames">
+<label for="mike">Mike</label>
+```
+
+​		~~我们可以发现，这里没有对复选框进行分组，正常的情况下，复选框需要进行name的分组，相同的name为一组。这个好像是对单选框的。复选框应该本来就可以不用分组？~~
+
+​		对于一个复选框，如果绑定了v-model，但是value不绑定，那么点击一个就是点击多个。因为没有使用value属性，值为null，所以所有为null都会被同步变化。
+
+​		同时，如果多选的复选框，但是绑定的属性不是一个数组那么最终也会变为全部都会出现相同的变化。 `checkedNames: 1,` 
+
+
+
+
+
+### 单选按钮
+
+```
+  <input type="radio" name="aa" id="jack" value="Jack" v-model="checkedNames">
+  <label for="jack">Jack</label>
+  <input type="radio" name="cc" id="john" value="John" v-model="checkedNames">
+  <label for="john">John</label>
+  <input type="radio" name="aa" id="mike" value="Mike" v-model="checkedNames">
+  <label for="mike">Mike</label>
+```
+
+​		在这里，我将name进行不同的划分，但是可以发现他们还是一组的成员。
+
+​		~~所以我们可以这样认为，使用了v-model之后，name也会绑定为这个属性的名称，所以你自己定义的属性名称是没有作用的。~~（注意：这里不是说，绑定的是v-model属性的名称，而是说，name的绑定和v-model的属性相关了。但是值不知道是什么。）
+
+​		**注意：** 首先我们可以测试出来，name的属性还是没有改变，因为如果添加了一个 相同name，但是没有使用v-model的，会出现竞争。
+
+​		对于单选按钮，**没有使用value的**，那么v-model绑定的属性取出来的值是空。就是那种什么都没有的空。**并且name属性默认不同**。
+
+​		如果自己定义了name属性，那么会以自己定义的为准。但是如果使用了value，搭配了v-model，对于同value，不同name，两个都选上。 ~~那么name属性还是以v-model为准（是指相同的v-model有相同的name）。~~
+
+​		并且，如果value相等，name不等，那么点击时，都会一起变化。如果name相等了，那么点击时点击那个就是哪个，但是value的值不变，并且对于初始化来说，是根据value的值来进行的变化，所以会以最后一个为准。
+
+​		这里有很多问题，但是这些都是可以手动避免的。大概知道就行。我也被自己扯蒙了。
+
+
+
+### 选择框
+
+​		单选时，直接绑定一个值即可
+
+```
+  <select v-model="selected">
+    <option disabled value="">请选择</option>
+    <option>A</option>
+    <option>B</option>
+    <option>C</option>
+  </select>
+  <span>Selected: {{ selected }}</span>
+```
+
+​		我们也可以发现，对于使用option的时候，可以不添加value属性，此时绑定的值就是内容。
+
+**注意：**如果没有规定 value 属性，选项的值将设置为 \<option> 标签中的内容。
+
+**注意：**
+
+> ​		如果 `v-model` 表达式的初始值未能匹配任何选项，`<select>` 元素将被渲染为“未选中”状态。在 iOS 中，这会使用户无法选择第一个选项。因为这样的情况下，iOS 不会触发 change 事件。因此，更推荐像上面这样提供一个值为空的禁用选项。
+
+​		当然这个我不清楚，毕竟我没有IOS。。。。。。
+
+
+
+​		多选时就是绑定一个数组
+
+```
+<select v-model="selected" multiple style="width: 50px;">
+  <option>A</option>
+  <option>B</option>
+  <option>C</option>
+</select>
+<br>
+<span>Selected: {{ selected }}</span>
+```
+
+​		首先，select多选框的属性 multiple，其次就是使用的数组了。
+
+​		对于不是使用数组的，将不会初始化成功，但是在后续的赋值还是会转化为数组。
+
+​		当然，对于 option 也可以使用v-for进行动态渲染。
+
+```
+<option v-for="item in options">{{ item }}</option>
+```
+
+
+
+## 值绑定
+
+​		对于单选按钮，复选框及选择框的选项，`v-model` 绑定的值通常是静态字符串 (对于复选框也可以是布尔值)：
+
+​		但是有时我们可能想把值绑定到 Vue 实例的一个动态 property 上，这时可以用 `v-bind` 实现，并且这个 property 的值可以不是字符串。
+
+```
+<!-- 当选中时，`picked` 为字符串 "a" -->
+<input type="radio" v-model="picked" value="a">
+```
+
+```
+<!-- 当选中时，`picked` 为a 的值 -->
+<input type="radio" v-model="picked" :value="a">
+```
+
+
+
+### 复选框
+
+```
+<input
+  type="checkbox"
+  v-model="toggle"
+  true-value="yes"
+  false-value="no"
+>
+
+// 当选中时
+vm.toggle === 'yes'
+// 当没有选中时
+vm.toggle === 'no'
+```
+
+​		针对多个复选框。其值还是为value值，如果没有value，其值就是null
+
+> ​		这里的 `true-value` 和 `false-value` attribute 并不会影响输入控件的 `value` attribute，因为浏览器在提交表单时并不会包含未被选中的复选框。如果要确保表单中这两个值中的一个能够被提交，(即“yes”或“no”)，请换用单选按钮。
+
+​		所以这个 true/false value 是单选时比较有用。
+
+
+
+### 单选按钮
+
+```
+<input type="radio" v-model="pick" v-bind:value="a">
+
+// 当选中时
+vm.pick === vm.a
+```
+
+​	
+
+### 选择框的选项
+
+```
+<select v-model="selected">
+    <!-- 内联对象字面量 -->
+  <option v-bind:value="{ number: 123 }">123</option>
+</select>
+
+// 当选中时
+typeof vm.selected // => 'object'
+vm.selected.number // => 123
+```
+
+​		通过这个我们可以看出，这个是可以使用对象的，同理，我们对于其他的选项框也可以使用对象的形式。
+
+
+
+## 修饰符
+
+### .lazy
+
+​		在默认情况下，`v-model` 在每次 `input` 事件触发后将输入框的值与数据进行同步 (除了[上述](https://cn.vuejs.org/v2/guide/forms.html#vmodel-ime-tip)输入法组合文字时)。你可以添加 `lazy` 修饰符，从而转为在 `change` 事件_之后_进行同步
+
+```
+<!-- 在“change”时而非“input”时更新 -->
+<input v-model.lazy="msg">
+```
+
+​		在输入之后使用回车，便是change事件。
+
+
+
+### .number
+
+​		如果想自动将用户的输入值转为数值类型，可以给 `v-model` 添加 `number` 修饰符
+
+```
+<input v-model.number="age" type="number">
+```
+
+​		无法输入字符串。
+
+​		这通常很有用，因为即使在 `type="number"` 时，HTML 输入元素的值也总会返回字符串。如果这个值无法被 `parseFloat()` 解析，则会返回原始的值。
+
+​		如何出现无法解析的情况，因为可以输入 e，+，-等，所以还是可以无法解析，问题在于无法解析输出的类型是字符串，但是貌似内容为''，
+
+
+
+### .trim
+
+​		如果要自动过滤用户输入的首尾空白字符，可以给 `v-model` 添加 `trim` 修饰符：
+
+```
+<input v-model.trim="msg">
+```
+
+​		没啥说的。就是字符串的 trim 方法。这个方法的使用是返回一个新的。
+
+
+
+## 在组件上使用 v-model （2.2.0+ 新增）
+
+​		HTML 原生的输入元素类型并不总能满足需求。幸好，Vue 的组件系统允许你创建具有完全自定义行为且可复用的输入组件。这些输入组件甚至可以和 `v-model` 一起使用！
+
+​		要了解更多，请参阅组件指南中的[自定义输入组件](https://cn.vuejs.org/v2/guide/components-custom-events.html#自定义组件的-v-model)。
+
+​		讲真，没有看懂。
+
+​		我们通过跳转，看到了自定义组件的 v-model 我只能大概知道
+
+​		一个组件上的 `v-model` 默认会利用名为 `value` 的 prop 和名为 `input` 的事件，但是像单选框、复选框等类型的输入控件可能会将 `value` attribute 用于[不同的目的](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/checkbox#Value)。`model` 选项可以用来避免这样的冲突
+
+```
+Vue.component('base-checkbox', {
+  model: {
+    prop: 'checked',
+    event: 'change'
+  },
+  props: {
+    checked: Boolean
+  },
+  template: `
+    <input
+      type="checkbox"
+      v-bind:checked="checked"
+      v-on:change="$emit('change', $event.target.checked)"
+    >
+  `
+})
+
+使用v-model时
+<base-checkbox v-model="lovingVue"></base-checkbox>
+```
+
+​		这里因为使用了v-model进行传值，所以使用了model: {}，设置了prop的名字，然后在props进行使用，此时传递的值就和父组件的 lovingVue 进行了绑定。然后通过事件$emit， change进行的提交。
+
+​		这里的 `lovingVue` 的值将会传入这个名为 `checked` 的 prop。同时当 `<base-checkbox>` 触发一个 `change` 事件并附带一个新的值的时候，这个 `lovingVue` 的 property 将会被更新。
+
+> ​		注意你仍然需要在组件的 `props` 选项里声明 `checked` 这个 prop。
+
+
+
+# 组件基础
 
 
 
