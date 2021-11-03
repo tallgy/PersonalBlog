@@ -2155,5 +2155,181 @@ Vue.component('base-checkbox', {
 
 # 组件基础
 
+```
+https://cn.vuejs.org/v2/guide/components.html
+```
 
+
+
+## 基本示例
+
+​		这里有一个 Vue 组件的示例
+
+```
+// 定义一个名为 button-counter 的新组件
+Vue.component('button-counter', {
+  data: function () {
+    return {
+      count: 0
+    }
+  },
+  template: '<button v-on:click="count++">You clicked me {{ count }} times.</button>'
+})
+```
+
+​		组件是可复用的 Vue 实例，且带有一个名字：在这个例子中是 `<button-counter>`。我们可以在一个通过 `new Vue` 创建的 Vue 根实例中，把这个组件作为自定义元素来使用
+
+```
+<div id="components-demo">
+  <button-counter></button-counter>
+</div>
+```
+
+​		当然注意上面这个组件的定义顺序要在你的Vue实例之前。因为编译问题，如果在之后的话就不会被编译了。
+
+```
+Vue.componnet('button', { });
+
+const vm = new Vue();
+```
+
+​		因为组件是可复用的 Vue 实例，所以它们与 `new Vue` 接收相同的选项，例如 `data`、`computed`、`watch`、`methods` 以及生命周期钩子等。仅有的例外是像 `el` 这样根实例特有的选项。
+
+
+
+## 组件的复用
+
+​		组件在被创建之后，可以被多次使用。
+
+### data必须是一个函数
+
+​		当我们定义这个 `<button-counter>` 组件时，你可能会发现它的 `data` 并不是像这样直接提供一个对象
+
+```
+Vue.component('button', {
+	data: {
+		return {
+			
+		};
+	},
+})
+
+const vm = new Vue({
+	data: {
+		
+	},
+})
+```
+
+​		当然如果你不这样写也不会报错，但是这样会有一个问题，那就是所以这个组件都会使用同一个对象的数据，一个发生了改变，所有都会发生改变。所以就是用了函数，这个会每次都调用了一次函数，形成一个新的作用域位置。
+
+​		这个就是使用了闭包的方法，当然你可能在想，是不是可以利用这个闭包，然后既能让数据不同步，又能让部分数据进行同步。当然，我没有解决掉。因为首先我们可以知道闭包的使用方式。
+
+```
+function Fn() {
+	return fn() {}
+}
+
+let fn = Fn();
+这个时候使用fn，就可以使用闭包。但是data是重复的创建Fn(). 所以每次都还是会创建新东西。
+```
+
+​		所以我现在不知道如何使用闭包的方式，当然，我们可以将方法写在全局，然后再组件里进行闭包。还是可以的。
+
+
+
+## 组件的组织
+
+​		为了能在模板中使用，这些组件必须先注册以便 Vue 能够识别。这里有两种组件的注册类型：**全局注册**和**局部注册**。至此，我们的组件都只是通过 `Vue.component` 全局注册的
+
+​		全局注册的组件可以用在其被注册之后的任何 (通过 `new Vue`) 新创建的 Vue 根实例，也包括其组件树中的所有子组件的模板中。
+
+​		局部注册的方式就是先将内容对象赋值给了一个变量，然后通过使用变量来进行注册。
+
+```
+let ComponentA = {  }
+
+new Vue({
+	el: '#xx',
+	components: {
+		'component-a': ComponentA,
+	},
+})
+```
+
+
+
+## 通过Prop向子组件传递数据
+
+​		简单来说，就是写在props属性里面的会添加到属性，父组件在调用子组件时，可以通过在标签里添加对应的属性，属性里面的值将会传递给子组件。
+
+```
+Vue.component('blog-post', {
+  props: ['title'],
+  template: '<h3>{{ title }}</h3>'
+})
+
+<blog-post title="My journey with Vue"></blog-post>
+```
+
+​		当然对于这个props，也有另一个写法，props使用对象，对象里面又是一个对象，default代表了默认值，type代表了类型，当然也有其他属性。但是我们后面在详细了解。
+
+```
+props: {
+  'title': {
+    default: '123',
+    type: String
+  }
+},
+```
+
+```
+<blog-post title="My journey with Vue"></blog-post>
+<blog-post></blog-post>
+```
+
+​		当然这个自定的属性attribute，也是可以使用v-bind: 来动态绑定。当然我们也可以使用v-model，但是这里也有其他的问题，具体后续在了解。
+
+​		传递的属性也能是对象，对于一些应该属于统一对象的，可以将其化为一个对象进行传递。
+
+
+
+## 单个根元素
+
+​		简单来说，就是在创建时，只能以一个根元素。如果根元素不止一个就会报错
+
+```
+<div></div>
+<div></div>
+```
+
+​		上面这个写法就会报错，但是下面这个写法。将所有的元素都放在了一个根元素的下级。
+
+```
+<div>
+  <div></div>
+  <div></div>
+</div>
+```
+
+​		这里的原因。我不清楚，只能说在Vue里面如果使用了下面这个写法时，可以知道，只会将第一个进行Vue的渲染，第二个将不会进行渲染操作。通过查阅资料，有的说是diff算法的原因，也有说是为了避免出现多个根元素，找不到以谁为主体。
+
+​		这个现在主要作为一个了解。
+
+```
+<div id="app">1</div>
+<div id="app">2</div>
+```
+
+
+
+## 监听子组件事件
+
+​		父组件可以给子组件传值了，但是子组件如何在一定的条件下通知父组件呢。
+
+​		方式就是在子组件使用 $emit
+
+```
+
+```
 
