@@ -2327,9 +2327,136 @@ props: {
 
 ​		父组件可以给子组件传值了，但是子组件如何在一定的条件下通知父组件呢。
 
-​		方式就是在子组件使用 $emit
+​		使用方式：
+
+​		1.首先父元素在传递的时候，传递一个可以被子元素监听的方法
 
 ```
+<blog-post @test="enlarge" post="{title: 1}"></blog-post>
+```
+
+​		2.然后子元素就可以通过使用 $emit 进行调用这个方法。注意$emit('xxxx')，xxx就是那个元素上的属性attribute，
 
 ```
+<button v-on:click="$emit('test')">
+```
+
+​		3.传递值的方式，这个方法的第一个是方法名，后面的就是要传递的值。
+
+```
+$emit('test', 1, 2);
+```
+
+**注意：**
+
+* 父元素进行传递时，直接写上方法名即可 `@test="enlarge"` 
+
+* 如果是 `@test="enlarge()"` 那么子组件传递参数则无效，`$emit('test', 1, 2);` 子组件这个写法虽然传递了参数，但是并不会传递值，因为父组件在传递的时候是直接传递了方法的调用的结果。
+
+  * ```
+    @test="enlarge()
+    $emit('test', 1, 2);
+    
+    结果：空
+    ```
+
+*  `@test="enlarge(1, 2)` 同理，这样在子组件调用的时候传递过来的值就直接是是1和2。并不会因为 `$emit('test', 321, 123);` 改成321，123。
+
+  * ```
+    @test="enlarge(1, 2)
+    $emit('test', 11111, 22222);
+    
+    结果：1, 2
+    ```
+
+*  `@test="enlarge($event, 12, 321, 312)"` 这样写有是一个特点，你会发现，这个$event 代表的不是点击的事件了，而是子组件传递的值。这个event就类似于了一个子组件的待定参数。
+
+  * ```
+    @test="enlarge($event, 1, 2)
+    $emit('test', 11111, 22222);
+    
+    结果：11111, 1, 2
+    ```
+
+
+
+### 使用事件抛出一个值
+
+​		可以使用 `$emit` 的第二个参数来提供这个值
+
+```
+<button v-on:click="$emit('enlarge-text', 0.1)">
+```
+
+​		然后当在父级组件监听这个事件的时候，我们可以通过 `$event` 访问到被抛出的这个值
+
+```
+@enlarge-text="postFontSize += $event"
+```
+
+​		如果这个是一个方法，那么这个值会作为第一个参数传入这个方法
+
+```
+onEnlargeText: function (enlargeAmount) {
+	this.postFontSize += enlargeAmount
+}
+```
+
+
+
+### 在组件上使用 v-model
+
+​		首先我们可以这样理解
+
+```
+<input v-model="searchText">
+
+等价于
+
+<input
+  v-bind:value="searchText"
+  v-on:input="searchText = $event.target.value"
+>
+```
+
+​		v-model的效果就是值的改变会影响到view的改变，输入的变化会影响值的改变。而v-bind，值的改变会影响到视图的改变，但是并没有双向的绑定。
+
+
+
+​		所以用在组件上时。
+
+```
+<custom-input
+  v-bind:value="searchText"
+  v-on:input="searchText = $event"
+></custom-input>
+```
+
+​		所以此时我们需要绑定一个input方法将其传递出来。
+
+​		为了让它正常工作，这个组件内的 `<input>` 必须：
+
+- 将其 `value` attribute 绑定到一个名叫 `value` 的 prop 上
+- 在其 `input` 事件被触发时，将新的值通过自定义的 `input` 事件抛出
+
+```
+Vue.component('custom-input', {
+  props: ['value'],
+  template: `
+    <input
+      v-bind:value="value"
+      v-on:input="$emit('input', $event.target.value)"
+    >`
+})
+```
+
+​		所以此时我们就能理解了，上面的那个组件使用v-model时的传递方式了。
+
+​		
+
+
+
+
+
+
 
