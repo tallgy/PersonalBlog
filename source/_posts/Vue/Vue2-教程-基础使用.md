@@ -2351,6 +2351,8 @@ $emit('test', 1, 2);
 
 * 父元素进行传递时，直接写上方法名即可 `@test="enlarge"` 
 
+* 因为html是不分大小写的，所以进行传递的时候，建议不要带有大写，对于$emit('xxx')，存在大写，则会监听失败。
+
 * 如果是 `@test="enlarge()"` 那么子组件传递参数则无效，`$emit('test', 1, 2);` 子组件这个写法虽然传递了参数，但是并不会传递值，因为父组件在传递的时候是直接传递了方法的调用的结果。
 
   * ```
@@ -2452,11 +2454,294 @@ Vue.component('custom-input', {
 
 ​		所以此时我们就能理解了，上面的那个组件使用v-model时的传递方式了。
 
-​		
+​		同时我么可以看一下那个[自定义事件的 v-model](https://cn.vuejs.org/v2/guide/components-custom-events.html)
+
+```
+Vue.component('base-checkbox', {
+  model: {
+    prop: 'checked',
+    event: 'change'
+  },
+  props: {
+    checked: Boolean
+  },
+  template: `
+    <input
+      type="checkbox"
+      v-bind:checked="checked"
+      v-on:change="$emit('change', $event.target.checked)"
+    >`
+})
+
+使用
+<base-checkbox v-model="lovingVue"></base-checkbox>
+```
+
+​		这里的model里面有prop和event，其中checked代表了传递的值。这个名字可以自己定义。 这里的event，值为change，则代表了是change事件，如果命名为input则为input的事件，当然，其实这里也是可以自己命名的。主要是为了方便认知。
+
+​		这个和上一个组件的通信的区别
+
+* 普通的是将值返回给上级，然后上级进行方法的操作。
+
+  * ```
+    <c :name="name" @inputf="fn">12</c>
+    
+    子组件的内容：
+    <input type="text" :value="name" @input="this.$emit('inputf', event.target.value);">
+    
+    这里再对fn写上一个方法，此时对于一个input输入就会出现对应的方法被执行。
+    ```
+
+* 对于v-model，则是发现直接将其传递给上级，上级不需要再指定一个方法。
+
+  * ```
+    <c v-model="searchText"></c>
+    
+    子组件的内容
+    <input type="text" :value="myInput" @input="inputE($event)">
+    ```
+
+  * 首先在使用组件的时候，使用v-mdoel方法。子组件，此时可以使用 model对象进行指定。当然，如果此时不指定怎么办
+
+  * 对于有value的情况：
+
+    * 首先，对于父组件使用v-model传递给了子组件的值，子组件如果使用了value的变量名，则会以此值进行接收。就算是checkbox，也是使用的value进行接收。不管子组件的内容(目前我的测试来说。)
+
+    * ```
+      props: {
+        value: {
+        	type: Boolean,
+        	defalut: false,
+        },
+      },
+      
+      记住props的写法，开始我写成了data式的写法，把默认值直接写在了后面，如果直接写后面是写变量的类型
+      props: {
+      	value: String,
+      }
+      ```
+
+  * 对于没有value的情况：
+
+    * 没有value，还没有添加一个model对象进行指定，那么就不会传入成功。
+
+    * 进行了model的指定，那么便会使用这个变量进行赋值。
+
+      * ```
+        model: {
+          prop: 'myInput',
+          event: 'inp'
+        },
+        props: ['myInput'],
+        ```
+
+  * 到此，我们已经解决了如何传值，下一步就是更新数据。
+
+    * 因为 v-model的特点就是会将值进行了绑定，所以我们只需要通知同步就行了
+
+    * ```
+      <input type="text" :value="myInput" @input="inputE($event)">
+      ```
+
+    * input事件，绑定了inputE方法，然后inputE里面通过$emit进行传递。事件名称就是model里面的事件名称，inp, 如果没有进行重命名，那么就是 input事件。父组件不需要做什么，因为v-model自动对事件和参数进行了赋值。当然，也是可以赋值常数的。
+
+  * 同时我们通过这个案例也知道了，如果你对一个input输入框加了v-model，也加了input的监听，在input的监听修改了v-model的值，那么会以input的为主。
 
 
 
+## 通过插槽分发内容
+
+​		简单来说，就是可以在标签内部使用标签，然后标签可以传递给子元素显示。父元素的使用方式就是下面这样。子元素只需要定义一个 slot，然后slot的位置就会显示为你定义的。
+
+```
+<alert-box>
+  Something bad happened.
+</alert-box>
+```
+
+```
+Vue.component('alert-box', {
+  template: `
+    <div class="demo-alert-box">
+      <strong>Error!</strong>
+      <slot></slot> 这里就会被渲染为其他的。
+    </div>`
+})
+```
+
+​		这里在简单的说几个地方。
+
+​		1.如果使用了多个slot，默认每个slot都会全部都会显示，但是又不是你想的那种显示。我不知道怎么描述。直接看例子就懂了：
+
+```
+<p>123</p>
+<slot></slot>
+<slot></slot>
+<p>321</p>
+
+
+<tt>
+  <div>123</div>
+  <div>321</div>
+</tt>
+```
+
+​		下面这个我定义了两个slot，然后组件名为tt，tt里面有两个div标签值为123和321。你可能会认为一个 slot为123，一个slot为321.但是其实不是，因为你没有给定name，所以这两个div会被当成一个传递给插槽。然后两个插槽都会被赋值。所以值为
+
+<img src="Vue2-教程-基础使用/image-20211105095952701.png" alt="image-20211105095952701" style="zoom:50%;" />
 
 
 
+​		那么要如何实现上面预想的效果呢，使用name。一个不带 `name` 的 `<slot>` 出口会带有隐含的名字“default”。
+
+​		然后就是父组件如何使用了，这里有三个写法
+
+```
+<div slot="aa">123</div>
+
+<template v-slot:aa>
+	<div>123</div>
+</template>
+
+<template #aa>
+	<div>123</div>
+</template>
+```
+
+​		上面这三个写法，
+
+* 第一个是一个旧的写法，不建议，因为建议是使用一个template进行包裹，template作为一个html5的新特性。
+
+* 第二个是使用的v-slot进行绑定。但是需要将其放在template上，才有效果
+
+* 第三个就是第二个的一个语法糖写法。
+
+* 然后就是如何使用变量，首先可以使用 v-bind 进行绑定。其次也可以使用 [] 进行表示。
+
+  * ```
+    :slot="name" :v-slot:name :#name
+    v-slot:[name] #[name]
+    ```
+
+
+
+​		然后就是插槽是会将值进行覆盖的。所以如果你在slot上写的一些样式和方法不会显示，对应的方式就是（**v-if，v-for** 有效果，因为这些是对DOM树进行了变化，所以会在DOM树的添加，而不是对一个属性的覆盖。但是对于一些class和v-show就没用了。）
+
+* 第一种，父元素写方法和样式，但是这样一个子组件就对父组件不透明了
+
+* 第二种，在外面套上一层标签。向下面这样就行了。
+
+  * ```
+    <div v-show="false">
+    	<slot></slot>
+    </div>
+    ```
+
+
+
+​		其他的部分，详见Vue的 [插槽](https://cn.vuejs.org/v2/guide/components-slots.html) 部分。
+
+
+
+## 动态组件
+
+​		简单来说就是不同组件会进行动态切换，所以可以使用
+
+```
+<component :is="name"></component>
+<button @click="change">change</button>
+```
+
+​		这里 component 是一个标签，is使用v-bind绑定了name，然后通过一个点击事件来修改了name的值，所以component，is就会被指定修改成其他的组件名。
+
+​		这个is属性应该是html里面的那个is属性，但是具体的使用方式我现在看不懂，可以取MDN里面进行了解，这里我们就当作is会指定一个组件名，然后这个component标签就会被替换成组件名。
+
+
+
+​		在上述示例中，name可以包括：
+
+- 已注册组件的名字，或
+- 一个组件的选项对象
+
+
+
+注意：
+
+​		这个is属性可以用于常规的html元素上。
+
+​		但是对于attribute将会作为DOM attribute进行绑定，对于像 `value` 这样的 property，若想让其如预期般工作，你需要使用 [`.prop` 修饰器](https://cn.vuejs.org/v2/api/#v-bind)。
+
+​		这里就扯出了 attribute 和 property 的一个区别，我这里就贴一个 [StackOverflow](https://stackoverflow.com/questions/6003819/properties-and-attributes-in-html#answer-6004028) 和 一个对应 StackOverflow 的 [CSDN ](https://blog.csdn.net/rudy_zhou/article/details/104058741) 的一个中文的讲解 
+
+​		大概就是说，attribute属性是一个HTML的上的属性，而property是一个DOM对象上的属性。有的属性开始是继承了attribute，但是后续会被修改，此时可以从property看出，但是不会从attribute看出。
+
+
+
+## 解析 DOM 模板时的注意事项
+
+​		简单来说，就是有的HTML 元素限制了其内部的元素是哪些，对于不属于的，会被提升到外部，触发其他问题。
+
+```
+<ul>、<ol>、<table> 和 <select>
+```
+
+​		有的元素是，只能存在于特定的元素内部
+
+```
+<li>、<tr> 和 <option>
+```
+
+​		案例
+
+```
+<table>
+  <blog-post-row></blog-post-row>
+</table>
+```
+
+​		对于上面的情况，blog-post-row 会被提升到外部，所以会出现页面布局的问题。
+
+​		解决方式，使用is attribute。
+
+```
+<table>
+  <tr is="blog-post-row"></tr>
+</table>
+```
+
+
+
+需要注意的是**如果我们从以下来源使用模板的话，这条限制是*不存在* 的**：
+
+- 字符串 (例如：`template: '...'`) 
+
+  - ```
+    Vue.component('tt', {
+      template: `
+        <table>
+        	<p>1</p>
+        </table>
+      `,
+    });
+    ```
+
+  - 此时 p 标签存在于table 内部。
+
+- [单文件组件 (`.vue`)](https://cn.vuejs.org/v2/guide/single-file-components.html) 
+
+- [`<script type="text/x-template">`](https://cn.vuejs.org/v2/guide/components-edge-cases.html#X-Template) 
+
+  ​	当然这些，我也没有测试过，所以不清楚。
+
+
+
+至此，简单的一个基础就了解完了，详细的还是看看Vue官网的 文档和API吧
+
+```
+https://cn.vuejs.org/v2/api/
+```
+
+```
+https://cn.vuejs.org/v2/guide/
+```
 
