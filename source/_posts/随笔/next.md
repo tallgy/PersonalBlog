@@ -2,11 +2,9 @@
 title: next 基本使用
 date: 2021-10-13 15:25:56
 tags: 
- - hexo
- - next
  - 随笔
 categories:
- - hexo
+ - 随笔
 ---
 
 
