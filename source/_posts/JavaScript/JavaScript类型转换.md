@@ -280,7 +280,7 @@ console.log(x + '1')
 
 **转换规则**
 
-![image-20211019105728109](JavaScript类型转换/image-20211019105728109-1634626914416.png)
+<img src="JavaScript类型转换/image-20211019105728109.png" alt="image-20211019105728109" style="zoom:67%;" />
 
 
 
