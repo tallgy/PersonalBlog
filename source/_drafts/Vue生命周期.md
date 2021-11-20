@@ -38,11 +38,37 @@ categories:
 
 <img src="Vue生命周期/lifecycle.png" alt="lifecycle" style="zoom:67%;" />
 
+简单就是分为了三大阶段。
 
+**初始化，数据响应式，销毁。**
 
 <img src="Vue生命周期/lifecycle9.jpg" alt="lifecycle9" style="zoom:67%;" />
 
 
 
 # 分析每一阶段
+
+## beforeCreate
+
+​		实例初始化之后，进行数据监听和事件/侦听器的配置之前
+
+​		此时实例已经初始化了，就是有了this的指向，但是还没有开启数据监听和事件的配置。
+
+​		但是没有data属性
+
+## created
+
+​		
+
+## beforeMount
+
+## mounted
+
+## beforeUpdate
+
+## updated
+
+## beforeDestroy
+
+## destroyed
 
