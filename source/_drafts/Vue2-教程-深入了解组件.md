@@ -863,7 +863,60 @@ this.$emit('update:title', 1111);
 
 ## 具名插槽
 
-​		
+​		简单来说就是使用name将插槽能够指定的使用在某个位置。对于没有使用name的，会有一个默认的name default。 
+
+```
+<slot name="header"></slot>
+```
+
+​		那么在使用这个具名插槽的时候，我们就可以使用一个 template 进行包裹，然后在里面使用 v-slot指令，并以 v-slot 的参数的形式提供名称。
+
+​		从下面的代码可以看出，对于使用了 template加上v-slot的，就是寻找name相对应的。对于没有使用的就会被作为一个默认，就算中间隔了一个template v-slot 也一样。
+
+```
+<base-layout>
+  <template v-slot:header>
+    <h1>Here might be a page title</h1>
+  </template>
+
+  <p>A paragraph for the main content.</p>
+  <p>And another one.</p>
+
+  <template v-slot:footer>
+    <p>Here's some contact info</p>
+  </template>
+</base-layout>
+```
+
+​		当然，为了语义的方便，我们建议还是可以将默认的放入一个 template v-slot:default，当然，这个default不要也可以，但是如果加了default，那么就不会将其他外层标签也加入默认，但是如果没有加上default的话，那么就会加入默认。
+
+​		比如：
+
+```
+<template v-slot:default>
+  <p>A paragraph for the main content.</p>
+  <p>And another one.</p>
+</template>
+//下面这个不会显示。
+<p>And another one.</p>
+```
+
+```
+<template>
+  <p>A paragraph for the main content.</p>
+  <p>And another one.</p>
+</template>
+//上面的template没有使用default，下面这个会显示出来，因为都被算在了插槽里面
+<p>And another one.</p>
+```
+
+
+
+## 作用域插槽
+
+​		2.6.0 废弃了 slot-scope
+
+​		因为我们可以知道，插槽的默认的作用域是编译时的环境，所以一般常常是父级作用域，那么此时我们要如何将作用域作用域子级。
 
 
 
