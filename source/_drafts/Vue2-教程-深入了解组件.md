@@ -542,13 +542,330 @@ c-c.B[type='BB']
 
 ### 禁用 Attribute 继承
 
+​		简单来说就是因为在使用这个组件时，一些没有被prop的属性会被加入根标签，但是有的时候是不想这样的，所以我们可以使用 inheritAttrs: false，代表了继承属性为false。
 
+```
+Vue.component('my-component', {
+	//这个属性，为false，代表了多余的属性不会被记录在dom树上。（多余是指没有在props定义的），默认为true。
+  inheritAttrs: false,
+  // ...
+})
+```
+
+​		当然对于需要被继承的属性，我们可以使用 $attrs 进行获取。这个属性包含了一个属性名和一个属性值。
+
+​		通过 inheritAttrs 和 $attrs 这两个属性，就可以自己决定属性应该被赋予哪个元素。通常用于编写基础组件。
+
+​		下面这个例子，首先，使用了 inheritAttrs 进行了拦截。对于props不存在的属性将不会出现在根元素上。然后再对input标签上添加了一个 v-bind="$attrs" 因为$attrs 属性是一个键值对。然后将其赋值给了input标签上。
+
+```
+Vue.component('base-input', {
+  inheritAttrs: false,
+  props: ['label', 'value'],
+  template: `
+    <label>
+      {{ label }}
+      <input
+        v-bind="$attrs"
+        v-bind:value="value"
+        v-on:input="$emit('input', $event.target.value)"
+      >
+    </label>
+  `
+})
+
+<base-input
+  label="Username:"
+  v-model="username"
+  required
+  placeholder="Enter your username"
+></base-input>
+```
+
+```
+$attrs 的值。
+{
+	required: ""
+	placeholder: "Enter your username"
+}
+```
+
+> 注意 `inheritAttrs: false` 选项**不会**影响 `style` 和 `class` 的绑定。
+
+​		通过这个方式来进行操作的话，不用担心哪个是真正的根元素。
 
 
 
 # 自定义事件
 
+## 事件名
+
+​		首先要注意一个地方，那就是，对于 vue 的 v-on 监听来说，（语法糖是@）。这个是不会将短横线转为驼峰的。
+
+​		我们从前面可以知道，对于 props 来说，传递的属性如果是短横线，那么在props里面可以使用驼峰来进行处理，但是对于事件来说不行。
+
+​		这里就会好奇为什么prop可以短横线转驼峰，但是事件不能呢。有的说是JavaScript的命名规范里面不能使用短横线命名。
+
+```
+this.$emit('myEvent')
+<!-- 没有效果 -->
+因为 短横线不能转换为驼峰。所以没有效果。
+<my-component v-on:my-event="doSomething"></my-component>
+```
+
+​		所以对于 @myEvent 将会被转化为 @myevent。
+
+​		所以最好的建议就是全部都是用 kebab-case。这里不但有HTML大小写不敏感的原因，还有对于模板字符串来说。大小写是规定的。
+
+
+
+## 自定义组件的v-model 2.2.0+
+
+​		v-model 这个默认是利用名为 value 的prop 和 input 的事件。当然对于input的单选框和其他的会将value属性用于不同的prop。但是我们可以使用 model 选项来解决 v-model的冲突。
+
+​		简单的理解一下下面的内容，prop：checked，这个默认是value，代表了使用props的checked作为v-model的绑定。event：change，默认是input，代表监听的事件名称是change，这些都是可以进行修改的。
+
+```
+Vue.component('base-checkbox', {
+  model: {
+    prop: 'checked',
+    event: 'change'
+  },
+  props: {
+    checked: Boolean
+  },
+  template: `
+    <input
+      type="checkbox"
+      v-bind:checked="checked"
+      v-on:change="$emit('change', $event.target.checked)"
+    >
+  `
+})
+```
+
+​		比如我这里进行一个修改。就是将 prop 的checked改成了XXX，于是相对应的。props的名字也要有一个XXX的存在。同理。我可以将event改成一个AAA，那么就会将emit提交的事件名称修改为AAA。
+
+```
+model: {
+  prop: 'XXX',
+  event: 'AA'
+},
+props: {
+  XXX: String
+},
+template: `
+  <input
+  :value="XXX"
+  @change="$emit('AA', $event.target.value)"
+  >
+`
+```
+
+> 注意你仍然需要在组件的 props 选项里声明 checked 这个 prop。
+
+
+
+## 将原生事件绑定到组件
+
+​		简单来说就是我想对一个标签进行监听，比如input监听，方法在本身，但是组件的input标签是在子组件的。那么此时我们就可以发现。子组件的输入并不会调用这个方法。
+
+```
+<base-input @input="onInput"></base-input>
+```
+
+​		我们可以先做一个原生的示例。通过下面这个示例我们可以发现。在输入input的时候会输出1，2 。因为这个是冒泡的原因。所以先进行的子组件的执行，再进行的父组件的执行。
+
+```
+<div oninput="console.log(2);">
+  <input oninput="console.log(1);"/>
+</div>
+```
+
+​		那么我们做一个vue组件的示例。并且我们也可以发现。此时就不会执行 myInput 方法了。只会执行组件内部的input的方法。不会执行外部的。原因的话。我们可以知道对于没有props接收的属性一般会被加入根元素，但是我们可以发现对于 监听属性来说，并没有加入到根元素。
+
+```
+<div id="app">
+  <base-input @input="myInput"></base-input>
+</div>
+
+Vue.component('base-input', {
+  template: `<input @input="CInput">`,
+  methods: {
+    CInput() {
+      console.log('c');
+    }
+  }
+})
+```
+
+​		具体的原因还不清楚。但是要记住就是直接使用监听是不会被监听成功的。有可能是监听要通过JavaScript进行操作，但是组件的元素会被替换，所以监听会失效。
+
+​		因此我们可以使用 .native 修饰符 那么此时就可以将监听放入根元素了。当然，这个的效果简单来说就是会将事件绑定给根元素。但是如果本来根元素不支持这个事件，那么就会静默失败，比如 div的根元素绑定一个focus，就会失败。
+
+```
+<base-input @input.native="myInput"></base-input>
+```
+
+
+
+​		此时，对于根元素并不是我想要绑定的元素，这个时候，我们知道，对于props，有一个叫做。$attrs，和 inheritAttrs 进行搭配，可以使父组件传递的props在子组件能够有一个自己规定的位置出现。那么同时事件也有一个 $listeners 属性，他是一个对象，里面包含了作用在这个组件上的监听器。
+
+```
+<div><input v-on="$listeners" @input="CInput"></div>
+```
+
+​		但是注意，如果使用了 .native 那么将不会出现在 $listeners 里面。不管 .native 是否会绑定成功。
+
+​		下面这个是使用computed，这里记住一个问题，那就是 下面这个写法是会将 input 的监听进行覆盖的一个操作。但是又通过了 $emit 向上通知了父组件的 input。同理 使用 this.$listeners['input'] 也会覆盖input。
+
+```
+computed: {
+  inputListeners: function () {
+    var vm = this
+    // `Object.assign` 将所有的对象合并为一个新对象
+    return Object.assign({},
+      // 我们从父级添加所有的监听器
+      this.$listeners,
+      // 然后我们添加自定义监听器，
+      // 或覆写一些监听器的行为
+      {
+        // 这里确保组件配合 `v-model` 的工作
+        input: function (event) {
+        	vm.$emit('input', event.target.value)
+        }
+      }
+    )
+  }
+},
+```
+
+
+
+## .sync修饰符 2.3.0+
+
+​		因为双向绑定会带来维护上的问题。因为对于data的变更不清楚来源。
+
+​		所以我们推荐 update:myPropName 来代替。在一个包含 title 的假设的组件。
+
+```
+this.$emit('update:title', newTitle)
+```
+
+​		因此就引出了sync修饰符，这算是一个语法糖。
+
+* 对于父组件来说，变化就是将 :title 和 :update:title 进行了合并，简单来说就像是进行了 v-model 的操作一样。
+
+  * ```
+    <base-input
+      v-bind:title="a"
+      v-on:update:title="a"
+    ></base-input>
+    
+    <base-input :title.sync="a"></base-input>
+    ```
+
+* 对于子组件来说，没有什么变化， 这里的 :title.sync 就是 @update:title 加上了 :title，所以对于 $emit 也是使用原来的 update:title 进行的提交。
+
+  * ```
+    this.$emit('update:title', Math.random());
+    ```
+
+
+
+在这里，还有一个问题就是。我们可以发现对于 emit提交时带的参数，父组件如果要将方法写在那个标签上进行表达式的执行，那么 $event 就是第一个参数。
+
+```
+this.$emit('update:title', 1);
+
+//这里的 $event 就是 子元素在 $emit 提交时的第二个参数，从第二个参数开始的提交就是会传递给父元素的参数。这里只是第二个，如果没有参数的话，就会为undefined
+<base-input @update:title="a = $event"></base-input>
+```
+
+
+
+> 注意带有 `.sync` 修饰符的 `v-bind` **不能**和表达式一起使用 (例如 `v-bind:title.sync=”doc.title + ‘!’”` 是无效的)。取而代之的是，你只能提供你想要绑定的 property 名，类似 `v-model`。
+
+
+
+​		当然，这里的 sync修饰符 也可以和 v-bind 进行搭配
+
+```
+<text-document v-bind.sync="doc"></text-document>
+
+this.$emit('update:title', 1111);
+```
+
+
+
+> 将 `v-bind.sync` 用在一个字面量的对象上，例如 `v-bind.sync=”{ title: doc.title }”`，是无法正常工作的，因为在解析一个像这样的复杂表达式的时候，有很多边缘情况需要考虑。
+
+
+
 # 插槽
 
+​		简单来说就是，因为Vue的组件化思路，所以很多都是以组件进行的开发。但是为了降低组件和组件的解耦性，就可以使用插槽，将组件之间的联系进一步的降低。
 
+​		在 2.6.0中，提供了新的语法 v-slot 来代替了 slot 和 slot-scope
+
+## 插槽内容
+
+​		
+
+**一个简单的示例**
+
+​		下面的示例就代表了 Your Profile 将会代替 slot这个标签进行显示。当然 插槽的内部可以包含任何模板代码，包括HTML和其他组件，这也是我们常会使用的方法。
+
+```
+<navigation-link url="/profile">
+  Your Profile
+</navigation-link>
+
+
+<a>
+  <slot></slot>
+</a>
+```
+
+
+
+## 编译作用域
+
+​		简单来说，看下面这个代码，这个 a 应该是 父级组件上的 a呢，还是子组件上的a呢。
+
+​		最终的结果就是这个是 父级组件上的a。
+
+```
+<div>
+	<base-input>{{ a }}</base-input>
+</div>
+```
+
+这里有条规则
+
+> 父级模板里的所有内容都是在父级作用域中编译的；子模板里的所有内容都是在子作用域中编译的。
+
+
+
+## 后背内容
+
+​		简单来说就是一个插槽的默认值。简单来说就是写在 slot 里面的内容就是 插槽的默认值。
+
+​		如果你在使用组件的时候没有使用插槽，那么就会使用这个默认的内容，并且这个默认的内容的作用域是在子组件的。
+
+​		如果提供有内容，那么便会渲染来取代内容。
+
+```
+<div><slot>{{ x }}</slot></div>
+```
+
+
+
+## 具名插槽
+
+​		
+
+
+
+# 动态组件&异步组件
 
