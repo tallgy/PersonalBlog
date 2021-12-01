@@ -918,7 +918,204 @@ this.$emit('update:title', 1111);
 
 ​		因为我们可以知道，插槽的默认的作用域是编译时的环境，所以一般常常是父级作用域，那么此时我们要如何将作用域作用域子级。
 
+​		这个时候就是要使用作用域插槽的时候了。
+
+* 简单来说就是子组件在进行slot创建时，通过 v-bind 绑定一个属性，然后属性的值是data的值。
+* 然后在使用的时候，通过 v-slot:xx="xxx" 进行了属性的获取，这里 xxx就是子组件传递过来的一系列的属性而形成的对象。
+* 此时我们就可以在父组件里面使用到子组件的data了，当然，建议这个还是少使用吧，因为这个造成了组件的透明度降低。
+
+```
+<slot :x="x1"></slot>
+
+<template v-slot:default="a">
+a.x
+</template>
+```
+
+
+
+### 独占默认插槽的缩写语法
+
+​		就是说，只有被提供的内容只存在默认插槽的存在时，组件的标签才可以被当作插槽的模板来使用。此时我们就可以直接把 v-slot 用在组件上。
+
+​		这里我们首先知道 v-slot 可以使用在组件上，并且插槽是可以接收一个组件的。但是我们后面可以发现，如果直接使用组件，会出现插槽的位置无法正确的定位。
+
+​		然后我么可以发现，其实对组件是不能进行插槽的定位的。意思就是说，对于组件来说，使用插槽的 v-slot 不能定位到对应的具名插槽。
+
+​		比如下面这个情况，我开始以为 v-slot:footer 和 v-slot:header，都会按照正确的位置进行拜访，因为这个就是具名插槽的作用，只能用于template，对于下面这个test组件，虽然我们也使用了 v-slot:header 但是他并没有去header，而是就为普通的标签的行为。v-slot不会在除了template上起作用。
+
+```
+<base-input>
+  <template v-slot:footer>
+  	<ttt></ttt>
+  </template>
+
+  <p>123</p>
+  <p>111</p>
+
+  <test v-slot:header></test>
+</base-input>
+```
+
+
+
+```
+<current-user v-slot:default="slotProps">
+  {{ slotProps.user.firstName }}
+</current-user>
+```
+
+​		缩写语法
+
+```
+<current-user v-slot="slotProps">
+  {{ slotProps.user.firstName }}
+</current-user>
+```
+
+​		案例形式。简单来说就是，如果base-input内部只有一个默认插槽，那么我们可以将这个 base-input 内部的整体都作为一个 slot的代替，如果是以前， base-input>template[v-slot="slotProps"] 但是我们可以将template进行省略，所以变成了 base-input[v-slot="slotProps"]
+
+​		当然，上面这个也是进行了缩写了的。完整的话，需要加上 v-slot:default。
+
+```
+<base-input v-slot="slotProps">
+</base-input>
+```
+
+
+
+### 解构插槽Prop
+
+​		简单来说就是说，作用域插槽的内部原理就是将插槽的内容包裹在一个参数的函数内部。
+
+```
+function (slotProps) {
+  // 插槽内容
+}
+```
+
+​		在下面这个标签的使用里。使用了解构赋值的形式， { user } = slotProps，在这里，解构赋值的效果就是，取出了 slotProps的user给了 user。当然我们也可以使用其他的解构赋值的行为。
+
+```
+<current-user v-slot="{ user }">
+  {{ user.firstName }}
+</current-user>
+```
+
+
+
+## 动态插槽名
+
+​		2.6.0 新增
+
+```
+<template v-slot:[dynamicSlotName]>
+  ...
+</template	>
+```
+
+
+
+## 具名插槽的缩写
+
+​		2.6.0 新增
+
+​		简单来说，就是插槽的语法糖，v-slot => #，但是对于没有参数的话是无效的。
+
+```
+<current #header="{ user }"></current>
+//下面这个是无效的。
+<current #="{ user }"></current>
+```
+
 
 
 # 动态组件&异步组件
+
+## 在动态组件上使用 keep-alive
+
+​		之前，我们使用 is 属性来对组件进行切换。
+
+```
+<component v-bind:is="currentTabComponent"></component>
+```
+
+​		现在，我们在组件进行切换的时候，想要保存组件的状态。以避免重复的渲染。
+
+```
+<!-- 失活的组件将会被缓存！-->
+<keep-alive>
+  <component v-bind:is="currentTabComponent"></component>
+</keep-alive>
+```
+
+
+
+## 异步组件
+
+​		将应用分割成小一些的代码块，并且只在需要的时候才从服务器进行加载。对此Vue允许使用一个工厂函数的方式进行定义组件。Vue只有在这个组件需要被渲染，并把结果缓存起来供未来重渲染。
+
+​		下面这个简单的例子，表示了第二个参数是一个函数，函数需要使用resolve和reject，表示会以promise进行调用，通过resolve返回渲染对象，荣国reject表示加载失败。
+
+```
+Vue.component('async-example', function (resolve, reject) {
+  setTimeout(function () {
+    // 向 `resolve` 回调传递组件定义
+    resolve({
+      template: '<div>I am async!</div>'
+    })
+  }, 1000)
+})
+```
+
+​		一个推荐的做法是将异步组件和 [webpack 的 code-splitting 功能](https://webpack.js.org/guides/code-splitting/)一起配合使用
+
+```
+Vue.component('async-webpack-example', function (resolve) {
+  // 这个特殊的 `require` 语法将会告诉 webpack
+  // 自动将你的构建代码切割成多个包，这些包
+  // 会通过 Ajax 请求加载
+  require(['./my-async-component'], resolve)
+})
+```
+
+​		但是因为我这个异步组件和搭配webpack这个用的比较少，所以在这里就没有进行详细的讲述，就直接贴上Vue的官网链接了。
+
+```
+https://cn.vuejs.org/v2/guide/components-dynamic-async.html#异步组件
+```
+
+
+
+### 处理加载状态
+
+​		2.3.0 新增
+
+```
+const AsyncComponent = () => ({
+  // 需要加载的组件 (应该是一个 `Promise` 对象)
+  component: import('./MyComponent.vue'),
+  // 异步组件加载时使用的组件
+  loading: LoadingComponent,
+  // 加载失败时使用的组件
+  error: ErrorComponent,
+  // 展示加载时组件的延时时间。默认值是 200 (毫秒)
+  delay: 200,
+  // 如果提供了超时时间且组件加载也超时了，
+  // 则使用加载失败时使用的组件。默认值是：`Infinity`
+  timeout: 3000
+})
+```
+
+
+
+> 注意如果你希望在 [Vue Router](https://github.com/vuejs/vue-router) 的路由组件中使用上述语法的话，你必须使用 Vue Router 2.4.0+ 版本。
+
+
+
+# 处理边界情况
+
+## 访问元素 & 组件
+
+### 访问根实例
 
