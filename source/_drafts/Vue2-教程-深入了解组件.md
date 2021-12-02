@@ -1115,7 +1115,223 @@ const AsyncComponent = () => ({
 
 # 处理边界情况
 
+
+
 ## 访问元素 & 组件
 
-### 访问根实例
+
+
+### 访问根实例 this.$root
+
+​		这个可以通过 `this.$root`，进行访问。如果是methods里面的方法aa，那么就可以通过 `this.$root.aa` 进行访问。
+
+​		所有的子组件都可以将这个实例作为一个全局 store 来访问或者使用。
+
+> 对于 demo 或非常小型的有少量组件的应用来说这是很方便的。不过这个模式扩展到中大型应用来说就不然了。因此在绝大多数情况下，我们强烈推荐使用 [Vuex](https://github.com/vuejs/vuex) 来管理应用的状态。
+
+
+
+### 访问父级组件实例
+​		可以通过 $parent 属性来访问一个父组件的实例。
+​		但是请注意，这样写虽然是可以直接对父组件进行了操作，可以代替props来进行数据的访问，但是却会造成数据的修改时不清楚修改的源头。
+
+### 访问子组件实例或子元素
+​		可以通过 ref 属性，为子组件赋予一个ID引用。
+
+```
+<base-input ref="usernameInput"></base-input>
+
+那么父组件就可以通过 this.$refs.usernameInput 来访问子组件了。
+```
+
+​		但是记住，this.$refs，里面存放的只会有属于自己的子组件，以及有可能会有自己的子孙级组件。这个我们一会儿就说。
+
+​		ref同时也可以写在原生的HTML标签上面，for example `<input type="text" ref="inpu">` 如果写在了原生的HTML上面，我们通过$refs获取时也是一个原生的标签，并且也可以使用方法，比如 `focus` 等。
+
+```
+<div id="app">
+    <input type="text" ref="input">
+</div>
+
+//在父组件的方法里面使用这个便可以调用input的原生focus进行聚焦。
+this.$refs.inpu.focus()
+```
+
+
+
+关于父组件的 refs 是否会含有子组件，这个应该是在哪个组件被编译就会存在于哪个组件。
+
+​		比如看看下面这个文件的内容。template存在一个插槽和input，然后在使用组件的时候，插槽又是插入了一个input，但是如果我们查看结果，就会发现，插槽所写的ref会存在与父组件，而在template里面所写的，便会存在于子组件。
+
+```
+template: `<div><slot></slot><input type="text" ref="input"></div>`,
+
+<aaaa ref="ssss">
+    <input type="text" ref="inpu">
+</aaaa>
+```
+
+​		当 ref 和 v-for 一起使用的时候，ref会包含整个数组。一般来说，refs是一个对象，但是对于使用了v-for的来说，就会变成一个数组，就算是ref使用了v-bind 进行了绑定，也会变为存在不同ref的对象，内部含有数组。
+
+```
+<li :ref="i" v-for="i in 10"></li>
+
+1: [li]
+2: [li]
+3: [li]
+4: [li]
+
+形成的还是数组，虽然数组的长度只有1。
+```
+
+
+
+### 依赖注入
+
+​		简单来说，就是父子组件可以通过 $parent 来进行访问，但是对于嵌套的情况，会造成 $parent.$parent 那么此时就是依赖注入的时候。
+
+​		这里用到了两个新的实例的选项。 provide & inject
+
+**provide** 选项允许我们指定我们想要提供给后代组件的数据/方法。
+
+```
+provide: function() {
+	return {
+		get: this.get
+	}
+}
+```
+
+**inject** 在任何后代组件里，我们都可以使用 inject 选项来接收指定的属性进行注入。
+
+**例子**：
+
+```
+father
+	children
+		grandson
+
+那么此时 grandson要使用 father组件的方法就需要 this.$parent.$parent 来进行调用，但是对于有多层的调用会出现意想不到的问题。
+```
+
+​		使用 provide 和 inject 进行处理，需要记住，这个的调用创建应该是先于data，所以如果当data和inject进行了重合，那么便会出现data覆盖了inject，但是他们都是属于 init injected & reacted 周期。在使用 beforeCreate 之后， 以及 created 之前。
+
+```
+先使用 provide 进行提供需要给后代的方法和数据。
+const app = new Vue({
+	provide() {
+		return {
+			name: this.output,
+		}
+	}
+})
+
+然后在后代使用 inject 进行注入，注入之后就可以使用 this.name进行使用。
+Vue.component('xx', {
+	inject: ['name'],
+})
+```
+
+
+
+## 程序化的事件侦听器
+
+通过 $on(eventName, eventHandler) 来侦听一个事件。
+
+通过 $once(eventName, eventHandler) 来一次性的侦听一个事件。
+
+通过 $off(eventName, eventHandler)  来停止侦听一个事件。
+
+一般来说是很少进行使用的，但是当你需要在一个组件的实例上手动的侦听事件时，它们便派上了用场。
+
+```
+mounted() {
+	this.pi = new Pi({});
+},
+beforeDestroy() {
+	this.pi.destroy();
+}
+```
+
+如果使用程序化的侦听器来解决这个问题：
+
+```
+mounted() {
+	const pi = new Pi({});
+	this.$once('hook:beforeDestroy', function() {
+		pi.destroy();
+	})
+},
+```
+
+**注意**：
+
+> ​		Vue 的事件系统不同于浏览器的 [EventTarget API](https://developer.mozilla.org/zh-CN/docs/Web/API/EventTarget)。尽管它们工作起来是相似的，但是 `$emit`、`$on`, 和 `$off` 并不是 `dispatchEvent`、`addEventListener` 和 `removeEventListener` 的别名。
+
+
+
+## 循环引用
+
+### 递归组件
+
+​		组件是可以在他们自己的模板中调用自身的，但是只能通过name选项来做这件事。
+
+```
+name: 'stack',
+tempalte: `<div><stack></stack></div>`,
+```
+
+​		简单来说就是可以进行递归的循环，所以需要注意，并且发现对于全局注册组件，也可以使用组件名称进行递归组件。
+
+
+
+### 组件之间的循环引用
+
+​		对于组件之间的相互调用，组件在渲染树中互相为对方的后代和祖先。当通过 Vue.component 全局注册组件的时候，这个悖论将会被解开。
+
+```
+tree-father
+	tree-other
+	
+tree-other
+	tree-father
+```
+
+​		然而，如果你使用一个模块系统依赖/导入组件，则会遇到一个错误。
+
+​		所以此时的解决办法就是：
+
+* 将注册事件放入 beforeCreate 进行注册。
+
+  * ```
+    beforeCreate() {
+    	this.$options.components.ComponentA = require('./component-a.vue');
+    }
+    ```
+
+* 或者，在本地进行注册组件的时候，可以使用 webpack 异步 import
+
+  * ```
+    components: {
+    	ComponentA: () => import('./component-a.vue');
+    }
+    ```
+
+
+
+## 模板定义的代替品
+
+### 内联模板
+
+​		
+
+
+
+### X-Template
+
+
+
+
+
+
 
