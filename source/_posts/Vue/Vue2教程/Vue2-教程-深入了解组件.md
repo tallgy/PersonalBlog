@@ -1323,15 +1323,82 @@ tree-other
 
 ### 内联模板
 
-​		
+​		简单来说就是，组件内部的内容将会作为模板，而不是将其视为分布式内容(或者插槽？)。
+
+```
+<my-component inline-template>
+    <div>
+        <p>These are compiled as the component's own template.</p>
+        <p>Not parent's transclusion content.</p>
+    </div>
+</my-component>
+
+Vue.component('my-component', {
+})
+```
+
+**注意点**：
+
+* 使用的模板名需要是存在的
+* 如果要使用内联模板，那么对于全局注册的组件时需要的信息可以不需要，比如(template，data，methods等)。
+* 个人感觉这个和 template 的效果很相似。但是注意，使用内联模板也是可以使用data和methods的。所以这个的作用应该是很像 .vue 文件的使用。
 
 
 
 ### X-Template
 
+​		使用 script 脚本，并且将type设置为 text/x-template，然后通过使用 id 来引用模板。
+
+```
+<script type="text/x-template" id="hello-world-template">
+  <p>Hello hello hello</p>
+</script>
+
+Vue.component('hello-world', {
+  template: '#hello-world-template'
+})
+```
+
+​		这些替代模板都是将 模板内部的标签 和 数据 以及操作等进行了分割。
 
 
 
+## 控制更新
+
+### 强制更新
+
+​		使用 $forceUpdate
+
+```
+data() {
+	return {
+		x: [1, 3],
+	}
+}
+
+this.x[1] = 10;
+//此时，虽然数据发生了改变，但是因为vue2的数据响应式无法对数组的直接操作进行通知，所以不会发生更新，那么此时就需要使用 this.$forceUpdate(); 来进行强制更新了。
+this.$forceUpdate();
+```
 
 
+
+### 使用 v-once 的廉价静态组件
+
+​		Vue 渲染纯HTML非常快，但是有时你的组件包含了大量的静态内容。在这些情况下，可以确保只被评估一次。
+
+```
+Vue.component('terms-of-service', {
+  template: `
+    <div v-once>
+      <h1>Terms of Service</h1>
+      ... a lot of static content ...
+    </div>
+  `
+})
+```
+
+**注意**：
+
+尽量不要过度的使用这种模式。除非真的渲染缓慢。
 
