@@ -474,23 +474,147 @@ crateElement(
 
 
 
-
-
 #### 完整示例
 
+
+
+
+
 #### 约束
+
+​		组件树中，所有的 VNode 必须唯一。
+
+```
+render: function(createElement) {
+	const myParagraphVNode = createElement('p', 'hi')
+	return createElement('div', [
+		myParagphVNode,
+		myParagphVNode
+	])
+}
+```
+
+​		如果真的需要重复多次的元素/组件，你可以使用工厂函数来进行实现。
+
+```
+render: function(createElement) {
+	return createElement('div', 
+		Array.apply(null, { length: 20}).map(() => createElement('p', 'hi'))
+	)
+}
+```
+
+
 
 ### 使用 JavaScript 代替模板功能
 
 #### v-if 和 v-for
 
+​		对于在原生中 JavaScript 可以轻松完成的操作，Vue的render函数不会提供专有方法。
+
+​	比如 v-if 和 v-for
+
+```
+ul v-if
+	li v-for
+p v-else
+```
+
+```
+render(createElement) {
+	if (this.items.length) {
+		return createElement(
+			'ul',
+			this.items.map((item) => createElement('li', item.name))
+		)
+	} else {
+		return createElement('p', 'No items found.')
+	}
+}
+```
+
+
+
 #### v-model
+
+​		渲染函数中没有与 v-model 的直接对应
+
+​	所以必须自己实现对应的逻辑
+
+```
+props: ['value'],
+render(createElement) {
+	const self = this
+	return createElement('input', {
+		// 这个是会写在 标签属性 上的一个方法。
+		domProps: {
+			value: self.value
+		},
+		on: {
+			input(event) {
+				self.$emit('input', event.target.value)
+			}
+		}
+	})
+}
+```
+
+
 
 #### 事件 & 按键修饰符
 
 #### 插槽
 
+​		可以通过 this.$slots 访问静态插槽的内容。每一个插槽都是一个 VNode 数组
+
+```
+render(h) {
+	// div>slot
+	return h('div', this.$slots.default)
+}
+```
+
+​		this.$scopeSlots 访问作用域插槽，每个作用域插槽都是返回若干 VNode 的函数
+
+```
+render(h) {
+	// div>slot:text="message"
+	return h('div',  [
+		this.$scopeSlots.default({
+			text: this.message
+		})
+	])
+}
+```
+
+
+
 ### JSX
+
+​		存在一个 Babel 插件，用于在 Vue 中使用 JSX 语法。
+
+```
+import AnchoredHeading from './AnchoredHeading.vue'
+
+new Vue({
+  el: '#demo',
+  render: function (h) {
+    return (
+      <AnchoredHeading level={1}>
+        <span>Hello</span> world!
+      </AnchoredHeading>
+    )
+  }
+})
+```
+
+> 将 `h` 作为 `createElement` 的别名是 Vue 生态系统中的一个通用惯例，实际上也是 JSX 所要求的。从 Vue 的 Babel 插件的 [3.4.0 版本](https://github.com/vuejs/babel-plugin-transform-vue-jsx#h-auto-injection)开始，我们会在以 ES2015 语法声明的含有 JSX 的任何方法和 getter 中 (不是函数或箭头函数中) 自动注入 `const h = this.$createElement`，这样你就可以去掉 `(h)` 参数了。对于更早版本的插件，如果 `h` 在当前作用域中不可用，应用会抛错。
+
+
+
+
+
+
 
 ### 函数式组件
 
@@ -504,4 +628,111 @@ crateElement(
 
 ## 插件
 
+* 添加全局方法或者 property。
+* 添加全局资源：指令/过滤器/过渡 等等。
+* 通过全局混入
+* 添加Vue实例
+* 添加到 Vue.prototype
+
+
+
+### 使用插件
+
+​		通过全局方法 Vue.use() 使用插件。需要在 new Vue实例之前完成
+
+```
+Vue.use(MyPlugin)
+
+new Vue({})
+```
+
+​		传入一个可选的选项对象
+
+```
+Vue.use(MyPlugin, { someOption: true })
+```
+
+​		对于官方的插件。在检测到Vue是可访问的全局变量时会自动调用 Vue.use() 然而在 CommonJS 模块中，应该始终显式的调用 Vue.use() 。
+
+
+
+### 开发插件
+
+​		对于开发的插件，需要暴露一个 install 方法。这个方法的第一个参数是 Vue 构造器， 第二个参数是 一个可选的选项对象
+
+```
+MyPlugin.install = function(Vue, options) {
+	// 1、添加全局方法 或者 property
+	Vue.myGlobalMethod = function() {
+		// 逻辑
+	}
+	
+	// 2、添加全局资源
+	Vue.directive('my-directive', {
+		bind(el, binding, vnode, oldVnode) {
+			// 逻辑
+		}
+	})
+	
+	// 3、注入组件选项
+	Vue.mixin({
+		created: function() {
+			// 逻辑
+		}
+	})
+	
+	// 4、添加实例方法
+	Vue.prototype.$myMethod = function(methodOptions) {
+		// 逻辑
+	}
+}
+```
+
+
+
 ## 过滤器
+
+​		过滤器，常被用于常见的文本格式化。可以用在两个地方：双花括号插值 和 v-bind 表达式（后者从 2.1.0+ 开始支持）。过滤器应该被添加在 JavaScript 表达式的尾部， 由 “管道” 符号指示：
+
+```
+{{ message | capitalize }}
+
+div v-bind:id="rawId | formaId"
+```
+
+​		可以在一个组件的选项中，定义本地的过滤器：
+
+```
+filters: {
+	capitalize: function(value) {
+		...
+		return newValue
+	}
+}
+```
+
+​		全局过滤器
+
+```
+Vue.filter('capitalize', function(value) {
+	...
+	return newValue
+})
+```
+
+​		当全局过滤器和局部过滤器重名时，会采用局部过滤器。
+
+​		过滤器可以串联
+
+```
+{{ message | filterA | filterB }}
+```
+
+​	同时，过滤器时一个 JavaScript 函数，因此可以接收参数：
+
+```
+{{ message | filterA('arg1', arg2) }}
+```
+
+​	这里，filterA 被定义为3个参数的过滤器函数，其中 message 的值将作为第一个参数，'arg1' 和 arg2 将作为第二个参数和第三个参数。
+
