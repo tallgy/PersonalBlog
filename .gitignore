@@ -2,8 +2,6 @@
 node_modules
 /dist
 public
-scaffolds
-themes
 
 # local env files
 .env.local
@@ -26,4 +24,3 @@ pnpm-debug.log*
 
 .deploy_git
 .github
-db.json
