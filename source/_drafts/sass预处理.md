@@ -80,9 +80,10 @@ https://www.cnblogs.com/padding1015/p/7133811.html
 
 ## 然后就是安装sass
 
-先 gem env 了解一下安装了路径
+先 **gem env** 了解一下安装了路径
 
 ```
+参考资料：
 https://qastack.cn/programming/19072070/how-to-find-where-gem-files-are-installed
 
 https://guides.rubygems.org/command-reference/#gem_environment

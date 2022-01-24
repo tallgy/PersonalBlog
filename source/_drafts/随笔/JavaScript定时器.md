@@ -18,6 +18,9 @@ categories:
 ```
 setTimeout
 clearTimeout
+
+setInterval
+clearInterval
 ```
 
 
