@@ -6,6 +6,7 @@ tags:
  - 安装教程
  - NodeJS
  - npm
+ - 随笔
 ---
 
 
