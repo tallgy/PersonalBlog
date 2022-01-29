@@ -15,6 +15,16 @@ categories:
 
 使用sass，需要安装ruby，然后再安装sass
 
+如果是webpack这种项目的，可以使用 npm 下载包
+
+```
+"sass": "^1.49.0",
+"sass-loader": "^7.1.0",
+上面这两个下载了就可以编译了
+
+还有一个是 node-sass，但是这个下载好像需要python环境，而且貌似不需要也可以使用？但是对于这个sass的安装和环境的一些我还是不算很是理解清楚。
+```
+
 
 
 ## 第一步，安装 ruby
@@ -158,6 +168,8 @@ $padding-sm: 5px;
 	padding: $padding-sm;
 }
 ```
+
+
 
 
 
