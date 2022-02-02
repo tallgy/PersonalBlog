@@ -130,13 +130,27 @@ import 'element-ui/lib/theme-chalk/index.css';
 
 ## fonts-icon
 
-​	package/theme-chalk/src/icon.scss
+```
+package/theme-chalk/src/icon.scss
+```
 
-使用 @font-face 进行初始化。这个参数需要进行了解。
+* 首先，这个fonts-icon 是使用的 font class 这个方法，具体的几个方法。我们可以通过去 阿里巴巴矢量图标库下载时，使用下载代码，查看demo的html来进行查看区分。
 
-使用 #{$xx} 让 路径成为一个变量。
+* 使用 @font-face 进行初始化。这个参数需要进行了解。这个大概就是说，指定一个font-family的名称，以及指定一个url代表了可以去哪进行获取。
+  * 使用 #{$xx} 让 路径成为一个变量。
+* 然后使用类名选择器进行查找类名，将对应类名的进行初始化项目。
+* 目录构架，创建一个fonts的文件夹，用来存放 tff 和 字体的 js wtff 等文件，然后在外面创建一个icon的scss文件，用来进行使用。
+* 然后对要调用的使用类进行调用，然后类将同一进行一个css选择器进行初始化和选择。
 
-然后使用类名选择器进行查找类名，将对应类名的进行初始化项目。
+
+
+​		这里我们看一下代码
+
+```
+[class^="el-icon-"], [class*=" el-icon-"] {	}
+```
+
+​		这是element 写的选择器的选择，这两个选择器分别代表 选择从 el-icon- 开始 或者 包含了 ' el-icon-'，这里，你可能会有思考，为什么需要分开，如果我直接使用 class*="el-icon-" 这个不就是包含了吗。开始我也在思考，然后我发现了。因为 *= 是包含。那么如果用户自己定义的类名是 xxel-icon- 那么也会被我们这个包含进去，所以 这个就是需要进行分开，代表了是一个独立的class。
 
 
 
