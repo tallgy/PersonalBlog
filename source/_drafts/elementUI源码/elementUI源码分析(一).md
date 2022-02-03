@@ -154,3 +154,58 @@ package/theme-chalk/src/icon.scss
 
 
 
+## input 使用 icon
+
+```
+package/input
+```
+
+​		Elem UI 使用 input的方法是。首先，通过type进行类型的决定，并且支持 textarea 类型。
+
+​		并且使用了 前置元素 和 后置元素 通过使用 prefixIcon 和 suffixIcon 来进行设置。并且在里面同时也设置了 插槽。可以使用插槽的形式来配置前置和后置 元素。
+
+```
+<slot name="prefix"></slot>
+<i class="el-input__icon"
+  v-if="prefixIcon"
+  :class="prefixIcon">
+</i>
+```
+
+
+
+​		使用了 v-if 对于没有使用icon的进行了 隐藏。
+
+​		如果使用了 prefixIcon 进行了图标，或者 $slots.prefix 插槽。
+
+```
+span
+	v-if="prefixIcon || $slots.prefix"
+```
+
+
+
+​		同时，禁用了组件的继承，然后将属性全部赋值于input 输入框里面，方便用于进行透明化的处理。这个常用于封装组件，并且组件的核心不处于根组件的情况。
+
+```
+v-bind="$attrs"
+
+inheritAttrs: false
+```
+
+
+
+同时 Elem UI 的密码框是通过使用 show-password 进行的操作。
+
+
+
+
+
+
+
+
+
+
+
+
+
