@@ -111,20 +111,45 @@ export defalt xx
 
 ## index.scss
 
-在 package/theme-chalk/src 里面。
+​		在 package/theme-chalk/src 里面。
 
-common，里面创建一个 var.scss 里面存储了一些公用的变量
+​		common，里面创建一个 var.scss 里面存储了一些公用的变量。其他地方需要时要引入 var.scss
 
-其他地方需要时要引入 var.scss
+​		以及在一个index.scss 里面进行一个引入。
 
-以及在一个index.scss 里面进行一个引入。
-
-然后再看看 element ui的官网。
+​		然后再看看 element ui的官网。
 
 ```
 import 'element-ui/lib/theme-chalk/index.css';
 这个里面就是存储了全局的css，然后进行一个引入。
 ```
+
+​		并且将icon.scss 进行了引入，然后通过全局引入index来引入的icon。
+
+​		原因：
+
+* 因为 iconfont 的引入是需要使用url的引入
+
+  * ```
+    src: url('./fonts/iconfont.ttf?t=1643365814886') format('truetype');
+    ```
+
+* 同时对于引用的一个问题。那就是如果我在input目录下的index.scss 进行引入。那么对应的需要将引入的url路径进行改变，例子：url('../fonts/iconfont.ttf')
+
+  * 因为执行文件在这个目录，所以最终scss编译为css的时候会将路径引入在这里。所以会出现问题，所以Elem UI 的方法是将其在外面创建一个index.scss，然后只需要引入这个index.scss，即可。
+
+```
+fonts
+	iconfont.ttf
+input
+	index.scss
+icon.scss
+index.scss
+```
+
+
+
+
 
 
 
