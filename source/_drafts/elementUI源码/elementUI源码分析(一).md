@@ -179,15 +179,29 @@ package/theme-chalk/src/icon.scss
 
 
 
-## input 使用 icon
+## input
 
 ```
-package/input
+package/inpu
 ```
 
 ​		Elem UI 使用 input的方法是。首先，通过type进行类型的决定，并且支持 textarea 类型。
 
-​		并且使用了 前置元素 和 后置元素 通过使用 prefixIcon 和 suffixIcon 来进行设置。并且在里面同时也设置了 插槽。可以使用插槽的形式来配置前置和后置 元素。
+​		输入框包含了 前/后 置元素 和 内容。 内容就是显示在输入框里面内部的icon等。 元素就是显示在输入框前面的。和输入框紧邻的一个样式。 
+
+​		同时，禁用了组件的继承，然后将属性全部赋值于input 输入框里面，方便用于进行透明化的处理。这个常用于封装组件，并且组件的核心不处于根组件的情况。
+
+```
+v-bind="$attrs"
+
+inheritAttrs: false
+```
+
+​		同时 Elem UI 的密码框是通过使用 show-password 进行的操作。
+
+### icon 部分
+
+​		并且使用了 前置内容 和 后置内容 通过使用 prefixIcon 和 suffixIcon 来进行设置。并且在里面同时也设置了 插槽。可以使用插槽的形式来配置前置和后置 内容。
 
 ```
 <slot name="prefix"></slot>
@@ -196,8 +210,6 @@ package/input
   :class="prefixIcon">
 </i>
 ```
-
-
 
 ​		使用了 v-if 对于没有使用icon的进行了 隐藏。
 
@@ -208,23 +220,17 @@ span
 	v-if="prefixIcon || $slots.prefix"
 ```
 
-
-
-​		同时，禁用了组件的继承，然后将属性全部赋值于input 输入框里面，方便用于进行透明化的处理。这个常用于封装组件，并且组件的核心不处于根组件的情况。
+### input事件部分
 
 ```
-v-bind="$attrs"
-
-inheritAttrs: false
+@compositionstart="handleCompositionStart"
+@compositionupdate="handleCompositionUpdate"
+@compositionend="handleCompositionEnd"
+@input="handleInput"
+@focus="handleFocus"
+@blur="handleBlur"
+@change="handleChange"
 ```
-
-
-
-同时 Elem UI 的密码框是通过使用 show-password 进行的操作。
-
-
-
-
 
 
 
