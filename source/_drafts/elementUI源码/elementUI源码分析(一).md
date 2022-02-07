@@ -305,7 +305,39 @@ export function isKorean(text) {
 
 ​		输入框的 清除框通过v-if进行的判断显示隐藏。通过focus事件和mouseenter和mouseleave来解决 focus 和 hover 的值。
 
-​		输入框的 placeholder 样式使用的 scss的 mixin 和 content 进行的混入。
+输入框的 placeholder 样式使用的 scss的 mixin 和 content 进行的混入。
+
+
+
+## style sass
+
+​		样式的编写。
+
+### 对于 placeholder 
+
+​		使用 混入 和 content 进行了 一次 封装，后续只需要混入 这个placeholder 方法就可以进行处理。当然，我发现对于input貌似不需要使用这个混入，直接使用 ::placeholder 这个方法就可以。
+
+```
+@mixin placeholder {
+  &::-webkit-input-placeholder {
+    @content
+  }
+
+  &::-moz-placeholder {
+    @content
+  }
+
+  &:-ms-input-placeholder {
+    @content
+  }
+}
+```
+
+### disabled
+
+​		同时使用混入进行disabled的方法的处理。
+
+
 
 
 

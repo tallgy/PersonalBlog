@@ -49,6 +49,8 @@ Object.keys(obj).log
 
 forin循环，获取的是key值，会向原型链进行获取。但是不会查找不可枚举的属性
 
+​	可以使用 hasOwnProperty 来判断该属性是否是属于自身的。同时对于不可枚举的也是可以进行判断的。
+
 ```
 const obj = {
 	a: 1
@@ -59,8 +61,10 @@ const pro = {
 obj.__proto__ = pro
 Object.defineProperty(obj, 'c', {value: 3, enumerable: false}) // 不可枚举属性
 
-forin key in obj
-	log.
+for key in obj
+	log.key
+	log.obj[key]
+	log.obj.hasOwnProperty(key)
   a, b
 ```
 

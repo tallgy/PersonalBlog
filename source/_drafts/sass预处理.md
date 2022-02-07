@@ -226,3 +226,18 @@ $padding-sm: 5px;
 .box-div { }
 ```
 
+
+
+## 混入 mixin
+
+```
+@mixin aa {
+	@content
+}
+
+@include aa() {
+	color: red;
+}
+```
+
+​		并且混入可以携带参数。
