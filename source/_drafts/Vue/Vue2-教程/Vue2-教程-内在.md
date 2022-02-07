@@ -26,7 +26,7 @@ categories:
 
 ​		每一个组件的实例都对应一个 watcher 实例，他会在组件渲染的过程中把 接触过的数据 property 记录为依赖。然后当 setter 触发时，通知 watcher，从而重新渲染。
 
-<img src="C:\Users\tallg\Desktop\personal-blog\source\_drafts\Vue2-教程-内在\image-20211214103613477.png" alt="image-20211214103613477" style="zoom:67%;" />
+<img src="Vue2-教程-内在\image-20211214103613477.png" alt="image-20211214103613477" style="zoom:67%;" />
 
 ​	data会被变更为 getter和setter，然后在视图使用到数据时，便会调用getter，然后添加入了一个dep依赖(这个是使用一个数组进行维护)。当数据发生改变时，会通过notify通知给watcher，然后watcher将会把dep数组的数据重新渲染。
 

@@ -92,7 +92,7 @@ new Vue({
 
 
 
-![image-20211203152116522](D:\Documents\Blog\source\_drafts\Vue2-教程-过渡和动画\image-20211203152116522.png)
+![image-20211203152116522](Vue2-教程-过渡和动画\image-20211203152116522.png)
 
 ​		在这些过渡的切换中，如果你使用一个没有名字的transition，则v-是这些类名的默认前缀。
 
@@ -110,7 +110,7 @@ new Vue({
 
 
 
-<img src="D:\Documents\Blog\source\_drafts\Vue2-教程-过渡和动画\image-20211203154333481.png" alt="image-20211203154333481"  />
+<img src="Vue2-教程-过渡和动画\image-20211203154333481.png" alt="image-20211203154333481"  />
 
 ​		通过图示可以看出，当元素进行显示时：
 
@@ -914,5 +914,4 @@ new Vue({
 
 
 ### 赋予设计以生命
-
 
