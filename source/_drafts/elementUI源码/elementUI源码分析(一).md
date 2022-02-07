@@ -232,11 +232,80 @@ span
 @change="handleChange"
 ```
 
+**这里的问题点：** 
 
+* 我们为什么不使用 $listeners 进行封装。
 
+* 我们可以知道，默认情况下，进行组件方法的监听会加载入根组件
 
+* 但是，因为组件内部的根组件不是input，所以对于监听一个原生的方法。我们使用.native。
 
+* 并且直接监听给根组件并不会被当作一个原生的监听方法。对于根组件的监听，我们就可以通过 $listeners 进行监听。
 
+* 那么我好奇，如果我 使用 v-model，然后，组件内部使用 v-bind='$attrs' v-on="$listeners" 那么是不是就应该也有对应的效果啊。
+
+* 当然事实是不行，因为数据返回是一个 input event 事件。所以我看到了vue 官网是使用的 this.$emit('input', event.target.value) 然后就可以了。
+
+* 虽然这里，可以使用 v-model 了，但是，有另一个问题，那就这样写，自身的input事件会不一样。
+
+  * 首先 使用 @input="xxFn" 此时的第一个参数不是event事件了，而是子组件传递过来的参数
+  * 其次，如果我们使用 focus.native 那么就会失败。但是因为input是一个可冒泡事件，所以input使用没有问题。
+
+* 同时注意，此时的$event 是子组件传递的数据了。
+
+  * ```
+    inputListeners: function () {
+      var vm = this
+      // `Object.assign` 将所有的对象合并为一个新对象
+      return Object.assign({},
+        // 我们从父级添加所有的监听器
+        this.$listeners,
+        // 然后我们添加自定义监听器，
+        // 或覆写一些监听器的行为
+        {
+          // 这里确保组件配合 `v-model` 的工作
+          input: function (event) {
+            vm.$emit('input', event.target.value)
+          },
+        }
+      )
+    }
+    
+    v-on="inputListeners"
+    
+    父组件的调用
+    方法
+    @input="inputFn('$event', $event)"
+    inputFn(event, e) {
+      console.log('event', event, e) // $event, value
+    },
+    ```
+
+**Elem UI input 的监听事件之 compositionstart**： 
+
+通过使用 isComposing 来判断是否处于中文输入情况。对于中文的输入不会提交，不会进行验证和发送。
+
+其中我们发现在update的时候，调用了一个 isKorean 这里的方法就是里面有一个正则判断来判断你的输入是不是韩文的。
+
+```
+const text = event.target.value;
+const lastCharacter = text[text.length - 1] || '';
+this.isComposing = !isKorean(lastCharacter);
+
+判断是不是韩文。
+export function isKorean(text) {
+  const reg = /([(\uAC00-\uD7AF)|(\u3130-\u318F)])+/gi;
+  return reg.test(text);
+}
+```
+
+​		同时我发现，Elem UI对于 compositionstart 事件没有进行 emit 提交。所以我这里给我的UI做了一个提交。不知道是不是应该有个什么问题。
+
+​		同时，注意Elem UI input并没有对date进行封装样式，只是另写了一个组件给的date样式，内部input实则还是String。
+
+​		输入框的 清除框通过v-if进行的判断显示隐藏。通过focus事件和mouseenter和mouseleave来解决 focus 和 hover 的值。
+
+​		输入框的 placeholder 样式使用的 scss的 mixin 和 content 进行的混入。
 
 
 
