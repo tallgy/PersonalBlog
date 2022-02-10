@@ -1,5 +1,5 @@
 ---
-title: router
+title: router基础
 date: 2022-02-07 18:41:53
 tags:
  - router
@@ -9,7 +9,7 @@ categories:
 
 
 
-#  router 的学习
+#  router 的基础学习
 
 ## router 的基本使用
 
@@ -131,6 +131,13 @@ const User = {
 
 
 **我们分析两个的区别**：
+
+简述区别：下面的说法很长，并且总结的可能不对：
+
+* $watch 是通过监听的方式进行的监听，所以，只要组件没有被销毁的情况下，监听就有效。所以再从监听组件跳出其他组件时会触发。
+* 路由守卫 beforeRouteUpdate 是需要在路由内部的参数变化才会触发。对于跳转去其他路由和从其他路由跳转回来都不会触发。
+
+
 
 第一个：是利用路由的复用原因，所以使用watch来监听参数的变化，通过参数的变化，来表示里面的修改。
 
@@ -565,4 +572,230 @@ const routes = [
 ```
 
 
+
+## 路由组件传参
+
+### 通过 props:true 传递给路由组件
+
+```
+const User = {
+  props: ['id'],
+  template: '<div>User {{ id }}</div>'
+}
+const routes = [{ path: '/user/:id', component: User, props: true }]
+```
+
+​		那么此时，id 就会通过props传递给路由组件
+
+
+
+### 命名视图
+
+​		对于有命名视图的路由，必须给props里面给每个命名视图定义配置
+
+* 如果直接使用 props: true，那么代表里面所有的都为true
+
+* 否则就需要使用对象来对每个命名视图进行处理
+
+```
+const routes = [
+  {
+    path: '/user/:id',
+    components: { default: User, sidebar: Sidebar },
+    props: { default: true, sidebar: false }
+    // 所有的都为true
+    // props: true
+  }
+]
+```
+
+
+
+### props使用对象
+
+​		当 `props` 是一个对象时，它将原样设置为组件 props。当 props 是静态的时候很有用。
+
+​		就是说，使用的是对象的话，那么对象里面的内容就会作为props传递给路由组件。同时如果此时你的路由组件是携带了参数的。那么将不会传递给路由组件了。
+
+```
+const routes = [
+  {
+    path: '/promotion/from-newsletter',
+    component: Promotion,
+    props: { newsletterPopup: false }
+  }
+]
+```
+
+
+
+### 函数模式
+
+注意：
+
+* 对于函数，参数是route
+* 返回值，如果是 Boolean 值，并不会变成 props: true 这两个并不是一个意思。所以不会起作用。
+* 返回值，常是一个对象。然后按照对象的形式来处理
+
+```
+const routes = [
+  {
+    path: '/search',
+    component: SearchUser,
+    props: route => ({ query: route.query.q })
+  }
+]
+```
+
+
+
+## 不同的历史模式
+
+### Hash模式
+
+​		hash 模式是用 `createWebHashHistory()` 创建的：
+
+```
+import { createRouter, createWebHashHistory } from 'vue-router'
+
+const router = createRouter({
+  history: createWebHashHistory(),
+  routes: [
+    //...
+  ],
+})
+```
+
+​		hash模式就是通过在url后面使用一个hash字符 #。然后因为哈希字符并不会发送到服务器，所以不会出现找不到url的情况。但是对于 SEO 和 看来说，确实有点影响。
+
+
+
+### HTML5模式，history模式
+
+​		用 `createWebHistory()` 创建 HTML5 模式，推荐使用这个模式：
+
+```
+import { createRouter, createWebHistory } from 'vue-router'
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes: [
+    //...
+  ],
+})
+```
+
+​		当使用这种历史模式时，URL 会看起来很 "正常"，例如 `https://example.com/user/id`。漂亮!
+
+​		不过，问题来了。由于我们的应用是一个单页的客户端应用，如果没有适当的服务器配置，用户在浏览器中直接访问 `https://example.com/user/id`，就会得到一个 404 错误。这就丑了。
+
+​		不用担心：要解决这个问题，你需要做的就是在你的服务器上添加一个简单的回退路由。如果 URL 不匹配任何静态资源，它应提供与你的应用程序中的 `index.html` 相同的页面。漂亮依旧!
+
+
+
+​		简单来说就是，因为history模式的 url 是不带hash，所以我们知道从一个浏览器里面输入一个正常的url，他会找到对应的服务器并发送请求，那么类似于这种的： https://example.com/usre/id 他就会先进入对应的。
+
+
+
+### 服务器配置实例
+
+​		**注意**：以下示例假定你正在从根目录提供服务。如果你部署到子目录，你应该使用[Vue CLI 的 `publicPath` 配置](https://cli.vuejs.org/config/#publicpath)和相关的[路由器的 `base` 属性](https://router.vuejs.org/zh/api/#createwebhistory)。你还需要调整下面的例子，以使用子目录而不是根目录（例如，将`RewriteBase/` 替换为 `RewriteBase/name-of-your-subfolder/`）。
+
+
+
+#### Apache
+
+​		没有学过，可以说是完全看不懂了。
+
+​		也可以使用 [`FallbackResource`](https://httpd.apache.org/docs/2.2/mod/mod_dir.html#fallbackresource) 代替 `mod_rewrite`。
+
+```
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
+```
+
+
+
+#### nginx
+
+​		实不相瞒，nginx，我也没有学过。。
+
+```
+location / {
+  try_files $uri $uri/ /index.html;
+}
+```
+
+
+
+#### 原生 Node.js
+
+​		简单来说，就是先建立监听。
+
+​		然后使用 createServer，这个方法就会将所有的请求都会进行处理了。无论是什么请求，都会进行一个处理。那么我们思考这个算是一个拦截吗，因为既然什么请求都可以进行处理。那么就可以先做一个请求的拦截。当然，这样写符不符合规范不清楚。但是确实做拦截应该是可以的。
+
+​		这里的内容就是，收到请求，然后将index文件里的内容进行读取，然后再通过写响应头，并将内容进行返回。
+
+```
+const http = require('http')
+const fs = require('fs')
+const httpPort = 80
+
+http
+  .createServer((req, res) => {
+    fs.readFile('index.html', 'utf-8', (err, content) => {
+      if (err) {
+        console.log('We cannot open "index.html" file.')
+      }
+
+      res.writeHead(200, {
+        'Content-Type': 'text/html; charset=utf-8',
+      })
+
+      res.end(content)
+    })
+  })
+  .listen(httpPort, () => {
+    console.log('Server listening on: http://localhost:%s', httpPort)
+  })
+```
+
+
+
+#### Express + Node.js
+
+​		对于 Node.js/Express，可以考虑使用 [connect-history-api-fallback 中间件](https://github.com/bripkens/connect-history-api-fallback)。
+
+
+
+后续还有很多其他的，但是因为其他的我连名字都没有听过了，所以就不写了，直接上官网链接。
+
+```
+https://router.vuejs.org/zh/guide/essentials/history-mode.html
+```
+
+
+
+### caveat
+
+​		这有一个注意事项。你的服务器将不再报告 404 错误，因为现在所有未找到的路径都会显示你的 `index.html` 文件。为了解决这个问题，你应该在你的 Vue 应用程序中实现一个万能的路由来显示 404 页面。
+
+```
+const router = createRouter({
+  history: createWebHistory(),
+  routes: [{ path: '/:pathMatch(.*)', component: NotFoundComponent }],
+})
+```
+
+​		另外，如果你使用的是 Node.js 服务器，你可以通过在服务器端使用路由器来匹配传入的 URL，如果没有匹配到路由，则用 404 来响应，从而实现回退。查看 [Vue 服务器端渲染文档](https://v3.cn.vuejs.org/guide/ssr/introduction.html#what-is-server-side-rendering-ssr)了解更多信息。
+
+​		这里，为什么使用 /:pathMatch(.*) 来匹配404呢，那是因为，这里路由的选择是一个按照分级来排名的。而这个写法的分数只有20分，基本可以说是，只有其他都匹配不上了，才会匹配上这个。
+
+​		所以常用这个来匹配404路由。
 
