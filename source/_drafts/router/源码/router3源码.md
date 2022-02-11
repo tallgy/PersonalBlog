@@ -9,9 +9,11 @@ categories:
 
 
 
-# router 源码初学
+# router3 源码初学
 
 ​		最近在学vue-router，然后在学习的过程中，顺便简单的翻阅翻阅源码来看看一些问题。后续也会认真的查看源码部分。
+
+​		这个是 vue2 的部分。
 
 
 
@@ -89,5 +91,12 @@ categories:
 
 ​		我们可以查看 bindEnterGuard 方法。来查看里面的跳转情况。
 
-![image-20220211191050870](router3源码/image-20220211191050870.png)
+​		这个方法就是返回一个 routeEnterGuard 方法。然后在方法里面会返回一个guard的调用的返回值。这里guard 就是对应的 **beforeRouteEnter** 方法。
 
+​		通过这个方法我们可以知道，**routeEnterGuard** 里面 guard 是我们自定的 **beforeRouteEnter** 方法。里面的参数中，第三个参数的箭头函数，就是代表了我们的 **beforeRouteEnter** 方法中的 next。同时我们如果输出next也可以发现是正确的。
+
+​		所以我们在 beforeRouteEnter 里面调用next() ，其实就是调用这个方法。然后如果我们传递了参数，那么我们就会进行里面的操作。
+
+<img src="router3源码/image-20220211191050870.png" alt="image-20220211191050870" style="zoom:67%;" />
+
+​		同时我们发现，如果我们不调用next方法。这个 guard方法是不会调用的。
