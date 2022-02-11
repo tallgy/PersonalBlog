@@ -294,7 +294,180 @@ beforeRouteLeave (to, from) {
 
 # 路由元信息
 
-​		
+​		有时，你可能希望将任意信息附加到路由上，如过渡名称、谁可以访问路由等。这些事情可以通过接收属性对象的`meta`属性来实现，并且它可以在路由地址和导航守卫上都被访问到。定义路由的时候你可以这样配置 `meta` 字段：
+
+```
+const routes = [
+  {
+    path: '/posts',
+    component: PostsLayout,
+    children: [
+      {
+        path: 'new',
+        component: PostsNew,
+        // 只有经过身份验证的用户才能创建帖子
+        meta: { requiresAuth: true }
+      },
+      {
+        path: ':id',
+        component: PostsDetail
+        // 任何人都可以阅读文章
+        meta: { requiresAuth: false }
+      }
+    ]
+  }
+]
+```
+
+​		首先，我们称呼 `routes` 配置中的每个路由对象为 **路由记录**。路由记录可以是嵌套的，因此，当一个路由匹配成功后，它可能匹配多个路由记录。
+
+​		例如，根据上面的路由配置，`/posts/new` 这个 URL 将会匹配父路由记录 (`path: '/posts'`) 以及子路由记录 (`path: 'new'`)。
+
+​		一个路由匹配到的所有路由记录会暴露为 `$route` 对象(还有在导航守卫中的路由对象)的`$route.matched` 数组。我们需要遍历这个数组来检查路由记录中的 `meta` 字段，但是 Vue Router 还为你提供了一个 `$route.meta` 方法，它是一个非递归合并**所有 `meta`** 字段的（从父字段到子字段）的方法。这意味着你可以简单地写
+
+```
+router.beforeEach((to, from) => {
+  // 而不是去检查每条路由记录
+  // to.matched.some(record => record.meta.requiresAuth)
+  if (to.meta.requiresAuth && !auth.isLoggedIn()) {
+    // 此路由需要授权，请检查是否已登录
+    // 如果没有，则重定向到登录页面
+    return {
+      path: '/login',
+      // 保存我们所在的位置，以便以后再来
+      query: { redirect: to.fullPath },
+    }
+  }
+})
+```
+
+​		matched 里面的值的path是一个路由定义的样子(/about/:id) 而不是实际的url路由值。
 
 
+
+## TypeScript
+
+​		可以通过扩展 `RouteMeta` 接口来输入 meta 字段：
+
+```
+// typings.d.ts or router.ts
+import 'vue-router'
+
+declare module 'vue-router' {
+  interface RouteMeta {
+    // 是可选的
+    isAdmin?: boolean
+    // 每个路由都必须声明
+    requiresAuth: boolean
+  }
+}
+```
+
+
+
+# 数据获取
+
+​		有时候，进入某个路由后，需要从服务器获取数据。例如，在渲染用户信息时，你需要从服务器获取用户的数据。我们可以通过两种方式来实现：
+
+- **导航完成之后获取**：先完成导航，然后在接下来的组件生命周期钩子中获取数据。在数据获取期间显示“加载中”之类的指示。
+- **导航完成之前获取**：导航完成前，在路由进入的守卫中获取数据，在数据获取成功后执行导航。
+
+​		从技术角度讲，两种方式都不错 —— 就看你想要的用户体验是哪种。
+
+## 导航完成后获取数据
+
+​		当你使用这种方式时，我们会马上导航和渲染组件，然后在组件的 created 钩子中获取数据。这让我们有机会在数据获取期间展示一个 loading 状态，还可以在不同视图间展示不同的 loading 状态。
+
+```
+<template>
+  <div class="post">
+    <div v-if="loading" class="loading">Loading...</div>
+
+    <div v-if="error" class="error">{{ error }}</div>
+
+    <div v-if="post" class="content">
+      <h2>{{ post.title }}</h2>
+      <p>{{ post.body }}</p>
+    </div>
+  </div>
+</template>
+```
+
+```
+export default {
+  data() {
+    return {
+      loading: false,
+      post: null,
+      error: null,
+    }
+  },
+  created() {
+    // watch 路由的参数，以便再次获取数据
+    this.$watch(
+      () => this.$route.params,
+      () => {
+        this.fetchData()
+      },
+      // 组件创建完后获取数据，
+      // 此时 data 已经被 observed 了
+      { immediate: true }
+    )
+  },
+  methods: {
+    fetchData() {
+      this.error = this.post = null
+      this.loading = true
+      // replace `getPost` with your data fetching util / API wrapper
+      // 用你的数据获取 util 或 API 替换 `getPost`
+      getPost(this.$route.params.id, (err, post) => {
+        this.loading = false
+        if (err) {
+          this.error = err.toString()
+        } else {
+          this.post = post
+        }
+      })
+    },
+  },
+}
+```
+
+​		简单来说就是创建了 loading error post 三个状态，然后再created的时候创建监听（理由是创建的监听参数的变化，可以重复触发。否则在参数变化时使用的复用将不会触发改变。）使用 immediate 为true，立刻触发。再调用fetch方法。然后再进行调用时设置post，error为null，作用是避免复用的影响，设置loading为true，然后便是正常的获取数据并显示了。
+
+
+
+## 导航完成前获取数据
+
+​		通过这种方式，我们在导航转入新的路由前获取数据。我们可以在接下来的组件的 `beforeRouteEnter` 守卫中获取数据，当数据获取成功后只调用 `next` 方法：
+
+```
+export default {
+  data() {
+    return {
+      post: null,
+      error: null,
+    }
+  },
+  beforeRouteEnter(to, from, next) {
+    getPost(to.params.id, (err, post) => {
+      next(vm => vm.setData(err, post))
+    })
+  },
+  // 路由改变前，组件就已经渲染完了
+  // 逻辑稍稍不同
+  async beforeRouteUpdate(to, from) {
+    this.post = null
+    try {
+      this.post = await getPost(to.params.id)
+    } catch (error) {
+      this.error = error.toString()
+    }
+  },
+}
+```
+
+​		这个就是在 beforeRouteEnter里面调用了异步请求，然后再获取到数据之后将数据使用next回调进行调用。同时再beforeRouteUpdate进行更新时使用了es6的async 和 await方法。同时设置this.post为null，然后在调用getPost方法获取数据返回给post。
+
+​		在为后面的视图获取数据时，用户会停留在当前的界面，因此建议在数据获取期间，显示一些进度条或者别的指示。如果数据获取失败，同样有必要展示一些全局的错误提醒。
 
