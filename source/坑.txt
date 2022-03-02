@@ -1,3 +1,8 @@
 ttf字体是如何制作的。
 svg的使用
 html5 的 哈希字符#的原理
+
+前端性能优化
+https://zhuanlan.zhihu.com/p/115047733
+
+flow 静态js类型检查
