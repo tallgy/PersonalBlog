@@ -471,3 +471,73 @@ export default {
 
 ​		在为后面的视图获取数据时，用户会停留在当前的界面，因此建议在数据获取期间，显示一些进度条或者别的指示。如果数据获取失败，同样有必要展示一些全局的错误提醒。
 
+
+
+# 组合式API
+
+## 在 setup 中访问路由和当前路由
+
+​		因为我们在 `setup` 里面没有访问 `this`，所以我们不能再直接访问 `this.$router` 或 `this.$route`。作为替代，我们使用 `useRouter` 函数：
+
+```
+import { useRouter, useRoute } from 'vue-router'
+
+export default {
+  setup() {
+  	// useRouter 和 useRoute 是一个方法。返回一个route 和 router 的一个对象
+  	// route 是当前路由的信息， router 主要是原型的方法。和 全局路由信息。
+    const router = useRouter()
+    const route = useRoute()
+
+	// 
+    function pushWithQuery(query) {
+      router.push({
+        name: 'search',
+        query: {
+          ...route.query,
+        },
+      })
+    }
+  },
+}
+```
+
+​		`route` 对象是一个响应式对象，所以它的任何属性都可以被监听，但你应该**避免监听整个 `route`** 对象：
+
+```
+import { useRoute } from 'vue-router'
+
+export default {
+  setup() {
+    const route = useRoute()
+    const userData = ref()
+
+    // 当参数更改时获取用户信息
+    watch(
+      () => route.params,
+      async newParams => {
+        userData.value = await fetchUser(newParams.id)
+      }
+    )
+  },
+}
+```
+
+​		请注意，在模板中我们仍然可以访问 `$router` 和 `$route`，所以不需要在 `setup` 中返回 `router` 或 `route`。
+
+
+
+## 导航守卫
+
+​		
+
+
+
+
+
+
+
+
+
+
+
