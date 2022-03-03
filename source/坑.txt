@@ -6,3 +6,4 @@ html5 的 哈希字符#的原理
 https://zhuanlan.zhihu.com/p/115047733
 
 flow 静态js类型检查
+proxy 的了解
