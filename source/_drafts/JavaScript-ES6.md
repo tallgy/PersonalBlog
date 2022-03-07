@@ -160,9 +160,19 @@ function Child() {
 }
 
 实现原型的继承
+(function() {
+	function Fn() {}
+	Fn.prototype = Parent.prototype
+	Child.prototype = new Fn()
+	Child.prototype.constructor = Child
+})()
 
-Parent.prototype
+因为一个new方法就是要，创建一个原型指向了父类的原型的一个对象，然后执行构造器函数
+区别就是使用了new方法，然后中间会创建一个对象，对象的原型指向了父类原型，然后我们使用constructor修改了对象的构造器指向，就不会修改到父类的构造器了。
 
+Child.prototype = Parent.prototype
+// 这里是为了修改 构造器的指向，但是因为我们是直接复制的原型，所以这里的修改会影响到父类的构造器的指向。
+Child.prototype.constructor = Child
 ```
 
 ```
@@ -189,6 +199,8 @@ class Child extends Parent {
 ```
 简单的一个实现 Super
 使用：Super.call(this, Parent)
+思路：就是先创建一个空对象，进行调用，然后通过返回值类型来判断，哪个应该合并为this
+	缺点：因为是使用对象，而并不是真正的上下文this，所以不能使用一些需要依靠this操作的行为。以及赋值给this是依靠的 Object.assign 进行的操作。
 
 function Super(Parent) {
   const ctx = {}
@@ -201,7 +213,91 @@ function Super(Parent) {
 
 
 
+### Promise
 
+​		简单来说就是用来传递异步的消息。
+
+​		在以往，我们使用异步的形式都是使用的回调函数，就是将回调函数作为参数传递过去，然后方法那边的在异步结束之后再调用这个函数。
+
+​		同时Promise存在三个状态：
+
+* pending：初始状态
+* fulfilled：成功的状态
+* rejected：失败的状态
+
+​	**注意**：当状态从pending进入另外两个状态是，将不能改变了。
+
+​		只有异步操作的结果，可以决定当前是哪一种状态，任何其他操作都无法改变这个状态。
+
+![promises](JavaScript-ES6/promises.png)
+
+
+
+#### Promise.then():
+
+​		then() 方法返回一个 Promise (en-US)。它最多需要有两个参数：Promise 的成功和失败情况的回调函数。
+
+​		两个参数：代表了 res 和 err（可选）
+
+​		如果是Promise.then()，如果后面再有 .then() 但是却没有 return一个Promise的，那么就会进入 resolve(undefined) 的情况
+
+返回值：
+
+分为：返回一个值，没有返回，接受状态，拒绝状态，和未定状态。
+
+- 返回了一个值，那么 `then` 返回的 Promise 将会成为接受状态，并且将返回的值作为接受状态的回调函数的参数值。
+- 没有返回任何值，那么 `then` 返回的 Promise 将会成为接受状态，并且该接受状态的回调函数的参数值为 `undefined`。
+- 抛出一个错误，那么 `then` 返回的 Promise 将会成为拒绝状态，并且将抛出的错误作为拒绝状态的回调函数的参数值。
+- 返回一个已经是接受状态的 Promise，那么 `then` 返回的 Promise 也会成为接受状态，并且将那个 Promise 的接受状态的回调函数的参数值作为该被返回的Promise的接受状态回调函数的参数值。
+- 返回一个已经是拒绝状态的 Promise，那么 `then` 返回的 Promise 也会成为拒绝状态，并且将那个 Promise 的拒绝状态的回调函数的参数值作为该被返回的Promise的拒绝状态回调函数的参数值。
+- 返回一个未定状态（`pending`）的 Promise，那么 `then` 返回 Promise 的状态也是未定的，并且它的终态与那个 Promise 的终态相同；同时，它变为终态时调用的回调函数参数与那个 Promise 变为终态时的回调函数的参数是相同的。
+
+
+
+#### Promise.catch():
+
+​		catch() 方法返回一个Promise (en-US)，并且处理拒绝的情况。它的行为与调用Promise.prototype.then(undefined, onRejected) 相同。 (事实上, calling obj.catch(onRejected) 内部calls obj.then(undefined, onRejected)).
+
+​		参数：onRejected
+
+返回值：
+		一个Promise.
+
+​		默认一个 resolve，可以返回rejected
+
+
+
+#### Promise.finally():
+
+​		finally() 方法返回一个Promise。在promise结束时，无论结果是fulfilled或者是rejected，都会执行指定的回调函数。这为在Promise是否成功完成后都需要执行的代码提供了一种方式。这避免了同样的语句需要在then()和catch()中各写一次的情况。
+
+​		参数：onFinally
+
+
+
+#### Promise.all:
+
+​		Promise.all() 方法接收一个promise的iterable类型（注：Array，Map，Set都属于ES6的iterable类型）的输入，并且只返回一个Promise实例， 那个输入的所有promise的resolve回调的结果是一个数组。
+
+​		接受一个 promise的iterable类型
+
+​		就是可迭代的promise。需要全部返回resolve才能resolve
+
+​		只要任何一个输入的promise的reject回调执行或者输入不合法的promise就会立即抛出错误，并且reject的是第一个抛出的错误信息。
+
+
+
+
+
+#### Promise.allSettled:
+
+
+
+#### Promise.any:
+
+
+
+#### Promise.race:
 
 
 
