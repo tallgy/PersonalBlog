@@ -287,17 +287,88 @@ function Super(Parent) {
 
 
 
-
-
 #### Promise.allSettled:
 
 
 
 #### Promise.any:
 
+​		Promise.any()` 接收一个 Promise 可迭代对象，只要其中的一个 `promise` 成功，就返回那个已经成功的 `promise
+
 
 
 #### Promise.race:
 
+​		将与第一个传递的promise相同的完成方式被完成。就是说，在一个可迭代对象里面，我们将获取到所返回的第一个结果，不管是resolve和rejected。
 
+
+
+### generator 生成器
+
+​		生成器对象是由一个 generator function 返回的,并且它符合可迭代协议和迭代器协议。
+
+​		实例：
+
+```
+一个无限的迭代器
+
+function* idMaker(){
+    let index = 0;
+    while(true)
+        yield index++;
+}
+
+let gen = idMaker(); // "Generator { }"
+
+console.log(gen.next().value);
+// 0
+console.log(gen.next().value);
+// 1
+console.log(gen.next().value);
+// 2
+// ...
+```
+
+​		通过这个我们可以发现一个可迭代协议和可迭代对象，可迭代协议是一个Es6的补充规范。
+
+​		简单来说，一个可迭代对象就需要实现这个可迭代协议，会实现一个 @@iterator 方法。（原型链上存在也可以），在for of 的循环和使用 spread和rest操作符的时候就会使用上这个可迭代协议。
+
+​		可迭代协议的方法就是返回一个next方法。方法返回一个 done 和 value 属性。
+
+​		而这个就是我们生成器的返回的特点，简单来说就是我们生成器就是一个满足可迭代协议而存在的一个方法。
+
+
+
+### 模块化
+
+​		模块化简单分为 CommonJS、AMD、CMD和现在的ES6
+
+​		其中 AMD 和 CMD 都是参照的 CommonJS
+
+CommonJS：
+
+​		NodeJs发布的。
+
+​		require引入、exports导出
+
+AMD、CMD:
+
+​		define 定义模块，require实现加载。
+
+ES6：
+
+​		使用 import 导入
+
+​		export 导出
+
+​		关键字有import，export，default，as，from。
+
+
+
+ES6 和 CommonJS的区别：
+
+* ES6 是浅拷贝，修改会影响原理的值。
+  * CommonJS的深拷贝
+* CommonJS是运行时加载。
+  * ES6是编译时输出接口，可以单独加载接口。
 
