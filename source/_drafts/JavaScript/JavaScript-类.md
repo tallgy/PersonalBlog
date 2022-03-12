@@ -1,5 +1,5 @@
 ---
-title: JavaScript-Class
+title: JavaScript-类
 date: 2022-02-15 11:18:08
 tags:
  - JavaScript
@@ -11,7 +11,7 @@ categories:
 
 
 
-#  JavaScript Class 
+#  JavaScript 类
 
 ## 方法
 
