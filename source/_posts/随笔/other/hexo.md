@@ -57,6 +57,12 @@ page， 就是页面，会在source文件里面生成你写的文件名字，然
 ```
 
 
+## 新建博客文章
+
+```
+npx hexo [layout] <title>
+```
+
 
 ## 标签插件（Tag Plugins）
 

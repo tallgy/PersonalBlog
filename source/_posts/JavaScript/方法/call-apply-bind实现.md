@@ -17,7 +17,37 @@ categories:
 
 #  call,apply,bind源码的实现
 
+```
 
+相同点：都是替换 this 的指向
+区别：
+  call：第一个参数为this指向，后续的参数当作本身方法的传参
+  apply：第一个参数为this指向，第二参数为一个数组，数组内部为方法本身的传参
+  bind：整体同 call 方法一样，但是首先，bind不会马上执行方法，其次，bind方法返回的方法也可以携带参数继续向原方法添加。
+
+案例：
+
+const a = (a, b) => {
+    console.log(a, b);
+}
+
+// call
+a.call({}, 1, 2);
+
+// apply
+a.apply({}, [1, 2]);
+
+// bind
+const b = a.bind({}, 1, 2);
+b();
+
+// OR
+
+const b = a.bind({}, 1);
+b();
+b(2);
+
+```
 
 ## call方法
 
@@ -42,6 +72,19 @@ Function.prototype.myCall = function (ctx) {
 }
 ```
 
+更新的写法
+```
+const call = (ctx, ...args) => {
+    const fn = Symbol('fn');
+
+    ctx[fn] = this;
+    const res = ctx[fn](...args);
+
+    return res;
+}
+```
+
+
 ```
 fn.call(db, 'cc', 1);
 ```
@@ -65,6 +108,19 @@ Function.prototype.myApply = function (ctx, args) {
   return result;
 }
 ```
+
+更新的写法
+```
+const apply = (ctx, args) => {
+    const fn = Symbol('fn');
+
+    ctx[fn] = this;
+    const res = ctx[fn](...args);
+
+    return res;
+}
+```
+
 
 ```
 fn.apply(db, ['cc', 1]);
@@ -93,6 +149,20 @@ Function.prototype.myBind = function (ctx) {
   }
 }
 ```
+
+更新的写法
+```
+const bind = (ctx, ...args) => {
+    const fn = Symbol('fn');
+    ctx[fn] = this;
+
+    return (...newArgs) => {
+        const res = ctx[fn](...args, ...newArgs);
+        return res;
+    }
+}
+```
+
 
 ```
 fn.bind(db, 'cc', 1)();
