@@ -60,7 +60,7 @@ page， 就是页面，会在source文件里面生成你写的文件名字，然
 ## 新建博客文章
 
 ```
-npx hexo [layout] <title>
+npx hexo new [layout] <title>
 ```
 
 
