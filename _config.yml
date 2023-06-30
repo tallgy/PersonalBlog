@@ -105,6 +105,6 @@ deploy:
 - type: git
   repo: https://gitee.com/tallgy/tallgy.git
   branch: master
-- type: git
-  repo: https://github.com/tallgy/tallgy.github.io.git
-  branch: master
+# - type: git
+#   repo: https://github.com/tallgy/tallgy.github.io.git
+#   branch: master
