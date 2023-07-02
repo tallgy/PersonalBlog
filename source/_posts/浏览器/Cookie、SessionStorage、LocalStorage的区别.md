@@ -2,12 +2,9 @@
 title: Cookie、SessionStorage、LocalStorage的区别
 date: 2021-11-06 13:35:43
 tags:
- - 随笔
- - Cookie
- - LocalStorage
- - SessionStorage
+ - 浏览器
 categories:
- - 随笔
+ - 浏览器
 ---
 
 
