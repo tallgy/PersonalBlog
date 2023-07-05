@@ -21,6 +21,58 @@ https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Overview
 
 <img src="HTTP概述/image-20211024100324347.png" alt="image-20211024100324347" style="zoom:67%;" />
 
+### 请求报文结构
+
+<img src="HTTP概述/image-20210901165209368.png" alt="image-20210901165209368" />
+
+```
+请求行	请求方法， 请求url（不包括域名）， HTTP协议版本
+		get/post			/user							HTTP/1.1
+请求头
+	user-agent
+空行
+请求体
+```
+比如
+```
+POST /user HTTP/1.1      //请求行
+Host: www.user.com
+Content-Type: application/x-www-form-urlencoded
+Connection: Keep-Alive
+User-agent: Mozilla/5.0.      //以上是首部行
+（此处必须有一空行）  //空行分割header和请求内容 
+name=world   请求体
+```
+
+### 响应报文结构
+
+```
+响应行
+响应头
+空行
+响应体
+```
+
+响应行
+
+```
+http协议版本	状态码	状态码的文本描述
+```
+
+响应头
+
+```
+date， content-length， content-type
+```
+
+空行
+
+响应体
+
+```
+就是返回的内容
+```
+
 
 
 ## 版本迭代
@@ -113,6 +165,32 @@ Referer: https://developer.mozilla.org/en-US/docs/Glossary/Simple_header
 - 压缩了headers。因为headers在一系列请求中常常是相似的，其移除了重复和传输重复数据的成本。
 - 其允许服务器在客户端缓存中填充数据，通过一个叫服务器推送的机制来提前请求。
 
+
+#### 二进制协议
+
+以前的http是文本传输协议，现在使用的是二进制协议。
+文本协议使用的是 ASCII 码，而二进制协议是直接转为了 二进制。
+（里面的逻辑我也没有搞清楚区别）
+就是省了空间。
+
+
+### HTTP 3
+
+
+现在已经出了 HTTP3，最大的不同就是，不使用 TCP 连接。
+因为 TCP 连接需要3次握手，以及队头阻塞（就是在前面的数据没有被接收的时候，不会接收后面的），所以为了可以更快一步，于是就准备使用 UDP 连接，但是，使用 tcp 连接的原因就是为了，tcp的稳定和安全性，所以为了可以安全的使用udp，出了一个 quic 协议。
+
+#### quic
+
+* 无队头阻塞；
+* 更快的连接建立；
+* 连接迁移；
+
+阻塞问题：
+HTTP2的流传输，本质因为tcp原因，如果其中一个没有传输成功，那么也会导致阻塞，但是http3的 quic 如果是这个 流失败，只会让当前这个流被阻塞。所以会更快。
+
+连接建立：
+quic 因为是 udp 首先不需要进行 tcp 握手。同时 TLS 需要进行握手，但是 quic 内部去实现了 tls 层，所以仅仅只需要 1rtt 。并且如果是短时间进行二次 quic 连接，甚至可以复用以前的，形成 0rtt 的连接。
 
 
 ### 服务器推送方式
