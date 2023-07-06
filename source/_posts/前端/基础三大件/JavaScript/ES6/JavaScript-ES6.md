@@ -41,6 +41,16 @@ categories:
 
 ​		\` \`，ES6增加了模板字符串，可以进行换行，以及可以在字符串中拼接表达式 ${}。
 
+```
+es5:
+	var str = '';
+	
+es6:
+	let str = ``;
+	
+基本的字符串格式化。将表达式嵌入字符串中进行拼接。用${}来界定；
+ES6反引号(``)直接搞定；
+```
 
 
 ### 箭头函数
@@ -54,21 +64,57 @@ categories:
 
 ### 函数参数默认值
 
-​		
+```
+// ES6之前，当未传入参数时，text = 'default'；
+function printText(text) {
+    text = text || 'default';
+    console.log(text);
+}
 
+// ES6；
+function printText(text = 'default') {
+    console.log(text);
+}
+```
 
 
 ### Spread/Rest 操作符
 
 ​		简单来说就是 ... ，我们可以使用 ... 将数组解开为单个元素，也能将元素合并为一个数组。
+Spread / Rest 操作符指的是 ...，具体是 Spread 还是 Rest 需要看上下文语境。
+
+```
+当被用于迭代器中时，它是一个 Spread 操作符：
+
+function foo(x,y,z) {
+  console.log(x,y,z);
+}
+ 
+let arr = [1,2,3];
+foo(...arr); // 1 2 3
 
 
+当被用于函数传参时，是一个 Rest 操作符：当被用于函数传参时，是一个 Rest 操作符：
+
+function foo(...args) {
+  console.log(args);
+}
+foo( 1, 2, 3, 4, 5); // [1, 2, 3, 4, 5]
+```
 
 ### 二进制和八进制的字面量
 
+ES6 支持二进制和八进制的字面量，通过在数字前面添加 0o 或者0O 即可将其转换为八进制值：
 * 0o xx：八进制
 * 0b xx：二进制
 
+```
+let oValue = 0o10;
+console.log(oValue); // 8
+ 
+let bValue = 0b10; // 二进制使用 `0b` 或者 `0B`
+console.log(bValue); // 2
+```
 
 
 ### 解构赋值
@@ -78,6 +124,27 @@ categories:
 ```
 let {a} = obj
 let [c, d] = arr
+```
+
+```
+// 对象
+const student = {
+    name: 'Sam',
+    age: 22,
+    sex: '男'
+}
+// 数组
+// const student = ['Sam', 22, '男'];
+
+// ES5；
+const name = student.name;
+const age = student.age;
+const sex = student.sex;
+console.log(name + ' --- ' + age + ' --- ' + sex);
+
+// ES6
+const { name, age, sex } = student;
+console.log(name + ' --- ' + age + ' --- ' + sex);
 ```
 
 ​		注意：
@@ -132,6 +199,25 @@ super
 * 在静态方法中，super指向了父类，this就是子类
 * 同时，不能直接输出super，super需要以方法或属性的形式调用 super() super.fn() super.cc
 
+
+```
+var parent = {
+  foo() {
+    console.log("Hello from the Parent");
+  }
+}
+ 
+var child = {
+  foo() {
+    super.foo();
+    console.log("Hello from the Child");
+  }
+}
+ 
+Object.setPrototypeOf(child, parent);
+child.foo(); // Hello from the Parent
+             // Hello from the Child
+```
 
 
 继承
@@ -371,4 +457,13 @@ ES6 和 CommonJS的区别：
   * CommonJS的深拷贝
 * CommonJS是运行时加载。
   * ES6是编译时输出接口，可以单独加载接口。
+
+
+
+### for...of 和 for...in
+
+for...of 用于遍历一个迭代器，如数组：
+
+for...in 用来遍历对象中的属性：
+
 
