@@ -157,10 +157,54 @@ console.log(name + ' --- ' + age + ' --- ' + sex);
 ### 类
 
 ​		ES6 新增了一个关于 Class 的语法糖。
+ES6 中支持 class 语法，不过，ES6的class不是新的对象继承模型，它只是原型链的语法糖表现形式。
 
-​		类的ES5的实现
+#### static 关键字
+函数中使用 static 关键词定义构造函数的的方法和属性:
 
-​		new 方法的过程：
+```
+class Student {
+  constructor() {
+    console.log("I'm a student.");
+  }
+ 
+  study() {
+    console.log('study!');
+  }
+ 
+  static read() {
+    console.log("Reading Now.");
+  }
+}
+ 
+console.log(typeof Student); // function
+let stu = new Student(); // "I'm a student."
+stu.study(); // "study!"
+stu.read(); // "Reading Now."
+```
+
+#### 继承
+
+
+```
+extends 允许一个子类继承父类，需要注意的是，子类的 constructor 函数中需要执行 super() 函数。
+当然，你也可以在子类方法中调用父类的方法，如super.parentMethodName()。
+在 这里 阅读更多关于类的介绍。
+```
+
+
+#### 注意点
+
+```
+有几点值得注意的是：
+		类的声明不会提升（hoisting)，如果你要使用某个 Class，那你必须在使用之前定义它，否则会抛出一个 ReferenceError 的错误
+		在类中定义函数不需要使用 function 关键词
+    同时我发现，如果父类定义的值，子类定义的相同名称的方法，最终会被值覆盖
+```
+
+#### ES5 的类实现
+
+##### new 方法的过程：
 
 * 创建一个this的空对象，同时继承函数的原型。
 * 然后再执行方法。
@@ -180,7 +224,7 @@ return typeof res === 'object' ? res : this;
 
 
 
-构造器
+##### 构造器
 
 ​		ES6的构造器，就是类在进行new方法时会执行的一个方法。对于没有构造器的方法不能使用new方法。
 
@@ -190,7 +234,7 @@ return typeof res === 'object' ? res : this;
 
 
 
-super
+##### super
 
 ​		构造器内部可以调用super方法执行父类的构造器。
 
@@ -220,7 +264,7 @@ child.foo(); // Hello from the Parent
 ```
 
 
-继承
+##### 继承
 
 ​		class A extend B
 
