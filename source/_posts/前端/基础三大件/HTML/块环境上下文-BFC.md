@@ -1,5 +1,5 @@
 ---
-title: 块环境上下文(BFC)
+title: 块环境上下文-BFC
 date: 2021-10-21 22:49:56
 tags:
  - HTML
@@ -169,7 +169,7 @@ overflow	计算值不为 `visible` ，这里说的是计算值
 
 结果
 
-<img src="块环境上下文/image-20211022110540794.png" alt="image-20211022110540794" style="zoom:33%;" />
+<img src="块环境上下文-BFC/image-20211022110540794.png" alt="image-20211022110540794" style="zoom:33%;" />
 
 
 
@@ -216,5 +216,5 @@ overflow	计算值不为 `visible` ，这里说的是计算值
 
 
 
-<img src="块环境上下文/image-20211022161542404.png" alt="image-20211022161542404" style="zoom:33%;" />
+<img src="块环境上下文-BFC/image-20211022161542404.png" alt="image-20211022161542404" style="zoom:33%;" />
 
