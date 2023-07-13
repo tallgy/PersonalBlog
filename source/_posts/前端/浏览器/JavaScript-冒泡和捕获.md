@@ -11,10 +11,46 @@ categories:
 ---
 
 
+# DOM 事件传递 
 
- **前言:**
+三个阶段:
+  捕获,目标,冒泡
 
-#### **JavaScript-DOM的监听方式**
+我们可以通过使用 eventPhase 属性查看当前 event 是属于什么阶段
+
+```JavaScript
+
+// 捕获
+const unsigned short	CAPTURING_PHASE = 1;
+// 目标
+const unsigned short	AT_TARGET = 2;
+// 冒泡
+const unsigned short	BUBBLING_PHASE = 3;
+
+```
+
+## 简述三个阶段流程
+
+* 首先是从 根节点 出发,到达目标节点, 如果此过程中遇到的事件, 就被称为 捕获事件
+* 在节点到达 目标节点 之后, 此时就处于 目标 阶段
+* 在目标阶段过后, 最后又会一路往回到达根节点, 此过程中的事件, 被称为 冒泡事件.
+
+![image-20210907141230550](JavaScript-冒泡和捕获/image-20210907141230550.png)
+
+
+**总结**
+
+* 先捕获 再冒泡
+* 当事件传递到target时，无捕获冒泡之分
+* 如何在定义事件时决定为捕获阶段还是冒泡阶段
+  * target.addEventListener(type, listener[, useCapture]);
+  * 这里的 第三个参数就是用来定义监听的阶段
+  * true 代表捕获, false 代表冒泡.
+  * 默认是 false.
+* 在**目标事件**这里，不管`addEventListenter`的第三个参数是true还是false，都没有先捕获后冒泡的说法，既这里会**按顺序执行**。
+
+
+# **JavaScript-DOM的监听方式**
 
 ```
 dom.addEventListener('click', function (e) {
@@ -28,12 +64,12 @@ dom.onclick = function (e) {
 
 在这里,又被称为 **DOM0级** 和 **DOM2级**
 
-**0级DOM**:
+## **0级DOM**:
 
 * 标签内部的 onclick 事件
 * JavaScript 的 onclick = function() {} 函数
 
-**2级DOM:**
+## **2级DOM:**
 
 * 就是标准的事件模型
 * **addEventListener** 和 **removeEventListener**
