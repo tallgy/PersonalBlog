@@ -41,50 +41,77 @@ sticky 粘性定位
 ```JavaScript
 // CSS 代码：添加 sticky 和 relative 类
 
-.sticky {
-    position: fixed;
-    top: 0;
-}
-.relative {
-    position: relative;
-}
+    .relative {
+      position: relative;
+    }
+
+    .sticky-bottom {
+      position: fixed;
+      bottom: 0;
+    }
+    .sticky-top {
+      position: fixed;
+      top: 0;
+    }
+    .sticky-left {
+      position: fixed;
+      left: 0;
+    }
+    .sticky-right {
+      position: fixed;
+      right: 0;
+    }
 
 
 // JavaScript 代码：
+// 现存的问题，如果使用了 fixed 之后，会出现位置的不同，所以会如果只添加 left 或者 top 等，可能导致
+// 元素本来是在屏幕范围里面，但是却看不到的情况
 
 const sticky = (dom) => {
-    // 外层闭包
-    // 获取 dom 距离顶部的高度
-    const originOffsetY = dom.offsetTop;
-    const refresh = debounce(judge, 16);
+      const {offsetTop, offsetWidth, offsetHeight, offsetLeft} = dom;
 
-    // 事件监听
-    window.addEventListener('scroll', () => {
-      refresh(dom);
-    });
+      const isOverflow = () => {
+          // 滚动高度 超过 偏移高度，上面溢出
+        const topOverflow = window.scrollY > offsetTop
+          // 滚动高度+浏览器可视区域高度 比 偏移高度加元素高度 少，下面溢出
+        const bottomOverflow = window.scrollY+document.documentElement.clientHeight < offsetTop+offsetHeight
+        // 滚动宽度 超过 偏移宽度，左侧溢出
+        const leftOverflow = window.scrollX > offsetLeft;
+          // 滚动宽度 + 浏览器可视区域宽度 小于 偏移宽度 + 元素宽度， 右侧溢出
+        const rightOverflow = window.scrollX+document.documentElement.clientWidth < offsetLeft + offsetWidth
 
-    // 判断逻辑函数
-    function judge(dom) {
-        // 如果 滚动高度超过了 dom偏移高度，那么就添加 sticky 类
-      window.scrollY >= originOffsetY
-          ? dom.classList.add('sticky')
-          : dom.classList.remove('sticky');
-    }
+        const removeClassAll = () => {
+          dom.classList.remove('relative', 'sticky-bottom', 'sticky-top', 'sticky-left', 'sticky-right');
+        }
 
-    // 防抖节流
-    function debounce(func, delay) {
-      let timer = null;
+        console.log(topOverflow, bottomOverflow, leftOverflow, rightOverflow);
+        removeClassAll();
+        if (topOverflow) {
+          dom.classList.add('sticky-top');
+        }
+        if (bottomOverflow) {          
+          dom.classList.add('sticky-bottom');
 
-      return function (...args) {
-        timer && clearTimeout(timer);
-
-        timer = setTimeout(() => {
-          func.apply(this, args);
-        }, delay);
+        }
+        if (leftOverflow) {
+          dom.classList.add('sticky-left');
+        }
+        if (rightOverflow) {
+          dom.classList.add('sticky-right');
+        }
+        
+        if (!(topOverflow || bottomOverflow || leftOverflow || rightOverflow)) {
+          dom.classList.add('relative');
+        }
       }
-    }
-  };
 
+      const isOverflowDeBounce = debounce(isOverflow, 16);
+
+      // 事件监听
+      window.addEventListener('scroll', () => {
+        isOverflowDeBounce();
+      });
+    }
 
 ```
 
