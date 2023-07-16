@@ -14,8 +14,10 @@ categories:
 #  async和await
 
 ​		简单来说就像是将一个异步转化为一个同步的操作。
+  同时，async 和 await 更像是一个 基于 Promise 的 Generater 的语法糖。
 
-​		简单的使用方式
+
+## 简单的使用方式
 
 ```
 async function name() {
