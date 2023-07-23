@@ -17,6 +17,7 @@ https://github.com/remix-run/history
 
 # history
 
+基于 dev 分支，因为发现 4.9 的版本代码有些差距
 里面主要是涉及了几个方法
 
 ## 3 个创建 history 方法
@@ -309,7 +310,7 @@ function allowTx(action: Action, location: Location, retry: () => void) {
     !blockers.length || (blockers.call({ action, location, retry }), false)
   );
 }
-// handlePop 主要是进行 刷新 go 方法等调用会触发
+// handlePop 主要是进行 刷新 go 方法等调用会触发 添加的 popstate 事件
 // allowTx 主要在 push、replace 中会调用
 // 核心就是这样，如果 allowTx 为 true 才会去push，否则会造成阻塞
 // 依赖于 回调函数中去调用 retry 来进行跳转。
@@ -336,7 +337,7 @@ function push(to: To, state?: any) {
 hash 会通过一个 parsePath 来进行一次转义
 
 ```JavaScript
-  
+
 /**
  * 将字符串URL路径解析为其单独的路径名、搜索和散列组件。
  */
@@ -365,3 +366,4 @@ export function parsePath(path: string): Partial<Path> {
 }
 
 ```
+
