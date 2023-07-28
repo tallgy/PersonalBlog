@@ -317,10 +317,64 @@ export default function bindActionCreators(
 
 ## applyMiddleware
 
-中间件
-
-
 applyMiddleware
+返回的dispatch将是执行过了中间件的 dispatch
+内部是一个类似于的洋葱模型，会先执行外层到内层的数据
+然后在 dispatch 的时候由从内层到外层
+
+eg: 代码
+```JavaScript
+
+const middle1 = (store) => {
+  console.log(store.getState());
+  try {
+    console.log(stroe.dispatch());
+  } catch (e) {
+    console.log('这个时候不能调用 dispatch，因为是在中间件构造的时候');
+  }
+
+  // 返回一个 用 disptach 参数的方法
+  // 会在 applyMiddleware 就已经开始执行了
+  // 作用可能接近于初始化，同时包含了 dispatch 方法
+  // 这个还包含了闭包的考虑
+  return (dispatch) => {
+    console.log('封装的外层 applyMiddleware 此时就已经开始被执行');
+    // 这个 return 的方法，将被当作下一个的 dispatch
+    // 这个是一个由内部到外部的执行顺序。
+    // 同时每次执行都会触发 但是是数据更新之前
+    return (action) => {
+      console.log('此时才开始执行 dispatch，但是这个 dispatch 其实是后面的传递过来的');
+      return dispatch(action)
+    }
+  }
+}
+const middle2 = (store) => {
+  return (dispatch) => {
+    console.log('同上，在调用 applyMiddleware 此时就已经开始被执行');
+    return (action) => {
+      console.log('此时才开始执行 dispatch');
+      return dispatch(action)
+    }
+  }
+}
+
+const store = createStore(reducer, applyMiddleware(middle1, middle2))
+console.log(store.getState());
+store.dispatch({type: 'INCREMENT'})
+
+/*
+输出结果： state = { todos: [], counter: 0 }
+{ todos: [], counter: 0 }
+这个时候不能调用 dispatch，因为是在中间件构造的时候
+同上，在调用 applyMiddleware 此时就已经开始被执行
+封装的外层 applyMiddleware 此时就已经开始被执行
+{ todos: [], counter: 0 }
+此时才开始执行 dispatch，但是这个 dispatch 其实是后面的传递过来的 
+此时才开始执行 dispatch
+
+*/
+
+```
 
 ```JavaScript
 
@@ -329,6 +383,8 @@ export default function applyMiddleware(
 ): StoreEnhancer<any> {
   return createStore => (reducer, preloadedState) => {
     const store = createStore(reducer, preloadedState)
+    // 给一个默认的 dispatch，表示的是，不能在构造中间件的时候调度 dispatch
+    // 从代码上看来说，是不能在中间件中调用 dispatch 
     let dispatch: Dispatch = () => {
       // 不允许在构造中间件时进行调度。其他中间件不会应用于此分派。
       throw new Error(
@@ -342,6 +398,8 @@ export default function applyMiddleware(
       dispatch: (action, ...args) => dispatch(action, ...args)
     }
     const chain = middlewares.map(middleware => middleware(middlewareAPI))
+    // compose 主要是一个实现了洋葱模型的方法，可以将参数传递进去之后，然后返回一个方法，
+    // 这个方法的参数将作为第一个执行的参数，然后后续的参数将依赖前面执行的方法的返回值
     dispatch = compose<typeof dispatch>(...chain)(store.dispatch)
 
     return {
@@ -349,6 +407,94 @@ export default function applyMiddleware(
       dispatch
     }
   }
+}
+
+
+```
+
+
+
+## compose
+
+一个实现了洋葱模型的函数
+
+里面看着可能比较乱
+首先 外层的参数是第一个参数，当然我们内层也可以不需要返回方法
+只是因为为了了解 redux 的 middle 内部是怎么执行的逻辑顺序，
+所以 compose() 返回后调用的参数 是一个方法，代替的是 dispatch
+
+```JavaScript
+
+const fn1 = (func1) => {
+  console.log('fn1', func1);
+  return (arg1) => {
+    console.log('fn1 return', arg1);
+    return func1(arg1 + 1);
+  };
+}
+const fn2 = (func2) => {
+  console.log('fn2', func2);
+  return (arg2) => {
+    console.log('fn2 return', arg2);
+    return func2(arg2 + 1);
+  };
+}
+
+compose(fn1, fn2)(() => 1)(4)
+
+/*
+
+fn2 [Function (anonymous)]
+fn1 [Function (anonymous)]
+fn1 return 4
+fn2 return 5
+
+*/
+
+```
+
+```javaScript
+
+export default function compose(...funcs: Function[]) {
+  // 重点!!!
+  return funcs.reduce(
+    (a, b) =>
+      (...args: any) =>
+        a(b(...args))
+  )
+  // 详细描述
+  // 不传递参数，表示 第一个是从下标0开始
+  // 将一个没有执行的方法整体放成 preFn
+  // eg:  fn1, fn2, fn3
+  // preFn = fn1, curFn = fn2
+  // preFn(curFn(...)) = fn1(fn2(...))
+  // preFn = fn1(fn2(...)), curFn = fn3
+  // preFn(curFn(...)) = fn1(fn2(fn3(...))); 
+  /**
+   * 详细逻辑
+   * fn1, fn2, fn3
+   * 第一次
+   * preFn = fn1, curFn = fn2
+   * reutrn (...a) => {
+   *   return fn1(fn2(...a));
+   * } as fn1fn2
+   * 第二次
+   * preFn = fn1fn2, curFn = fn3
+   * return (...a) => {
+   *   return (fn3(...a) as args) => {
+   *     return fn1(fn2(...args));
+   *   }
+   * }
+   */
+  return funcs.reduce(
+    (preFn, curFn) => {
+      // 将这个方法直接返回，就会变成下一个的 preFn 
+      return (...args: any[]) => {
+        // 执行的是 preFn(curFn())
+        return preFn(curFn(...args))
+      }
+    }
+  )
 }
 
 
