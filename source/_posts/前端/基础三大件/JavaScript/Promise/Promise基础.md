@@ -324,26 +324,85 @@ resolve 第一个被兑现的值
 
 ### Promise.prototype.catch()
 
+将一个拒绝处理回调函数附加到 Promise 上，并返回一个新的 Promise，
+如果回调被调用，则解决为回调的返回值，如果 Promise 被兑现，解决为其原始兑现值。
 
+catch 方法被调用的情况
+* reject 同时没有 then 去获取
+* 方法抛错 (同时 then 的 reject 方法也会去获取到这个错误)
 
 ### Promise.prototype.finally()
 
+将一个处理器附加到 Promise 上，并返回一个新的 Promise，
+当原始 Promise 被解决时解决。无论 Promise 是否被兑现还是被拒绝，处理器都会在 Promise 敲定时被调用。
 
+就是跟 try catch finally 一样的逻辑
+
+**注意：**
+在 finally 回调函数中抛出错误（或返回被拒绝的 promise）仍会导致返回的 promise 被拒绝。
+例如，Promise.reject(3).finally(() => { throw 99; }) 
+和 Promise.reject(3).finally(() => Promise.reject(99)) 都以理由 99 拒绝返回的 promise。
 
 ### Promise.race()
 
 在任意一个 Promise 被敲定时敲定。换句话说，在任意一个 Promise 被兑现时兑现；在任意一个的 Promise 被拒绝时拒绝。
-resolve 或者 reject 第一个返回的值。
+简单来说就是 resolve 或者 reject 第一个返回的值。
 
 ### Promise.reject()
 
-
+返回一个新的 Promise 对象，该对象以给定的原因拒绝。
+```JavaScript
+// 这个等于 直接返回了 reject
+Promise.reject(11)
+```
 
 ### Promise.resolve()
 
+返回一个新的 Promise 对象，该对象以给定的值兑现。如果值是一个 thenable 对象（即具有 then 方法），则返回的 Promise 对象会“跟随”该 thenable 对象，采用其最终的状态；否则，返回的 Promise 对象会以该值兑现。
+通常，如果你不知道一个值是否是 Promise，那么最好使用 Promise.resolve(value) 将其转换成 Promise 对象，并将返回值作为 Promise 来处理。
 
+主要是两点：
+* 等同于 resolve 方法
+* 如果值是 thenable 对象。
+
+如果值是一个 thenable 对象，那么就是执行这个方法，
+通过调用 then 来决定真正的状态。
+```JavaScript
+Promise.resolve({
+  then: (onFulfilled, onRejected) => {
+    // 如果这里调用的是 onRejected 
+    // 那么后面的 then 方法就会以 rejected 返回
+    onFulfilled(111)
+  }
+}).then(re => {
+  console.log('re', re);
+}, rj => {
+  console.log('rj', rj);
+})
+
+Promise.resolve(1).then(re => {
+  console.log('re11', re);
+})
+/*
+这里发现是先执行的 re11 然后再 re log
+这里是因为 Promise.resolve 里面调用的 thenable 对象
+所以上一个其实是两个微任务
+所以 代表了 Promise.resolve 里面如果是一个 thenable 对象
+那么就会创建一个微任务的形式去调用
+re11 1
+re 111
+*/
+```
 
 ### Promise.prototype.then()
 
+将一个兑现处理器和拒绝处理器附加到 Promise 上，并返回一个新的 Promise，
+解决为调用处理器得到的返回值，或者
+如果 Promise 没有被处理（即相关处理器 onFulfilled 或 onRejected 不是函数），则以原始敲定值解决。
 
-
+语法
+```JavaScript
+then(onFulfilled, onRejected)
+// 如果 onFulfilled 不是一个函数，则内部会被替换为一个恒等函数（(x) => x），它只是简单地将兑现值向前传递。
+// 如果 onRejected 不是一个函数，则内部会被替换为一个抛出器函数（(x) => { throw x; }），它会抛出它收到的拒绝原因。
+```
