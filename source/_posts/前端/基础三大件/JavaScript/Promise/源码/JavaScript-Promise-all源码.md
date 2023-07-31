@@ -11,7 +11,7 @@ categories:
 
 # JavaScript-Promise.all源码
 
-​		Promise，可以说是前端 js 面试里面的高频考点了。上次面试就让我手撕了一个Promise.all 方法的源码
+​		Promise，可以说是前端 js 面试里面的高频考点了。上次面试就让我手撕了一个 Promise.all 方法的源码
 
 ​		这里，我先给出promise all方法的要求
 

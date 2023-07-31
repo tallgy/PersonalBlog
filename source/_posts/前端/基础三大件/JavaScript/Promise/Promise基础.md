@@ -197,7 +197,6 @@ t.js:9:3
 
 ## Promise API
 
-
 ### Promise.all()
 
 在所有传入的 Promise 都被兑现时兑现；在任意一个 Promise 被拒绝时拒绝。
@@ -320,7 +319,7 @@ Promise.allSettled([
 
 在任意一个 Promise 被兑现时兑现；仅在所有的 Promise 都被拒绝时才会拒绝。
 resolve 第一个被兑现的值
-
+就是和 all 方法相反而已
 
 ### Promise.prototype.catch()
 
