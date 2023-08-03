@@ -73,8 +73,9 @@ Function.prototype.myCall = function (ctx) {
 ```
 
 更新的写法
+注意：不能使用箭头函数，因为箭头函数的this指向不会被改变。
 ```
-const call = (ctx, ...args) => {
+const call = function(ctx, ...args) {
     const fn = Symbol('fn');
 
     ctx[fn] = this;
@@ -111,7 +112,7 @@ Function.prototype.myApply = function (ctx, args) {
 
 更新的写法
 ```
-const apply = (ctx, args) => {
+const apply = function(ctx, args) {
     const fn = Symbol('fn');
 
     ctx[fn] = this;
@@ -151,8 +152,8 @@ Function.prototype.myBind = function (ctx) {
 ```
 
 更新的写法
-```
-const bind = (ctx, ...args) => {
+```JavaScript
+const bind = function(ctx, ...args) {
     const fn = Symbol('fn');
     ctx[fn] = this;
 
