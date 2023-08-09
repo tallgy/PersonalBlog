@@ -29,6 +29,10 @@ categories:
 
 ## Nodejs 的 CommonJS
 
+```
+https://github.com/nodejs/node
+```
+
 ​	Nodejs 参照了 CommonJS 的规范，通过 require 和 exports 进行模块化。
 
 ​		关键词：require、exports、module.exports
@@ -66,7 +70,7 @@ X/index.node
 
 ## AMD、CMD
 
-AMD规范：RequireJS
+AMD规范： RequireJS
 
 ​	AMD规范是异步的，通过define方法将代码定义为模块，在被require时加载依赖的模块。
 
@@ -80,12 +84,11 @@ CMD规范：Sea.js
 
 
 
-## ES6
+## ES6 import
 
 ​		ES6模块化，Es6在后续也出现了模块化，就是
 
 import，exports
-
 
 
 * 和commonjs的区别：
@@ -101,6 +104,6 @@ import，exports
 ​		就是，不存在变量的使用情况，因为此时还没有。
 
 ​		commonjs 是深拷贝，而es6是浅拷贝
-
+   CommonJS 模块输出的是一个 值的拷贝，ES6 模块输出的是 值的引用
 
 
