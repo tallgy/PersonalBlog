@@ -24,7 +24,7 @@ https://developer.mozilla.org/zh-CN/docs/Web/CSS/border-radius
 
 `border-top-right-radius` `border-top-left-radius`
 
- `border-bottom-right-radius` `border-bottm-left-radius`
+`border-bottom-right-radius` `border-bottom-left-radius`
 
 我们取其中一个
 
@@ -53,7 +53,7 @@ border-top-right-radius: horizontal vertical
 
 然后得到横轴和数轴的半径后，相对进行偏移，然后画出一个圆形或者一个椭圆形，所裁剪出来的值。就是得到的效果。
 
-对于值是%的，那么宽度就会相对于宽度，高度就会相对于高度。
+对于值是%的 ， 那么宽度就会相对于宽度 ， 高度就会相对于高度 。
 
 
 
