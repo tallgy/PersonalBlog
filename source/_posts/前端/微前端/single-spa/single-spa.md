@@ -33,12 +33,20 @@ start 里面会创建 history 的监听
 然后子应用会在 main.js 文件抛出 single-spa 的生命周期方法
 处理对应的子应用问题。
 
+### 监听
+
+在这里创建的全局监听 popState、hashchange 事件
+对于 pushState 和 replaceState 事件使用的是 window.dispatchEvent 事件添加的。
+注意；调用 history.pushState() 或者 history.replaceState() 不会触发 popstate 事件。
+single-spa\src\navigation\navigation-events.js
+
 
 ## registerApplication
 
 注册子应用方法
 
 调用方法，放入 app 数组。 app 是一个子应用列表
+
 
 **参数**
 
