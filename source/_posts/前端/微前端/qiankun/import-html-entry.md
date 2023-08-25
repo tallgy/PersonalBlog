@@ -111,6 +111,7 @@ getEmbedHTML(template, styles, { fetch }).then(embedHTML => ({
 
 ### execScripts 方法
 
+执行 scripts 将 proxy 作为这个 window 进行执行
 
 ```JavaScript
 

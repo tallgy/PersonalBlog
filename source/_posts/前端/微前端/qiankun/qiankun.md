@@ -10,8 +10,7 @@ categories:
 # qiankun 微前端
 
 
-
-## scope css
+## scope css css 隔离方式
 
 原理比较简单
 
@@ -618,3 +617,6 @@ export default class SnapshotSandbox implements SandBox {
 
 ```
 
+
+
+## 
