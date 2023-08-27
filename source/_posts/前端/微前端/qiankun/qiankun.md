@@ -61,7 +61,7 @@ shadow.innerHTML = innerHTML;
 ## 沙箱模式 sandbox
 
 
-### LegacySandbox 基于Proxy
+### LegacySandbox 基于Proxy 支持单应用的代理沙箱
 
 内部是一个 Proxy 
 
@@ -263,7 +263,7 @@ const setTrap = (p: PropertyKey, value: any, originalValue: any, sync2Window = t
 ```
 
 
-### ProxySandbox 基于Proxy
+### ProxySandbox 基于Proxy 支持多应用的代理沙箱
 
 基于 Proxy 的沙箱
 这个沙箱的实现是 首先将 不可配置的属性 赋值到 fakeWindow 里面
@@ -550,7 +550,7 @@ const proxy = new Proxy(fakeWindow, {
 
 
 
-### SnapshotSandbox 基于 diff方式实现 沙箱
+### SnapshotSandbox 基于 diff方式实现 沙箱 快照沙箱
 
 这个是存在问题的。
 虽然 active 记录快照，同时恢复变更没有问题
@@ -619,4 +619,52 @@ export default class SnapshotSandbox implements SandBox {
 
 
 
-## 
+## Deferred 类
+
+是一个非常有意思的类，一开始还没有理解这个是有什么作用
+后面看了别人的解说，发现这个是一个很有用的方法
+他主要可以用来保证了 其他方法的执行完成，才能执行当前方法
+
+Deferred 源码
+```JavaScript
+
+class Deferred {
+  promise;
+  resolve;
+  reject;
+  constructor() {
+    this.promise = new Promise((resolve, reject) => {
+      this.resolve = resolve;
+      this.reject = reject;
+    });
+  }
+}
+
+```
+
+案例
+```JavaScript
+const frameworkStartedDefer = new Deferred();
+
+const start = () => {
+  console.log(1);
+  // 直到这个调用了 resolve 下面的才可以调用
+  frameworkStartedDefer.resolve();
+}
+
+const b = async () => {
+  console.log(2);
+  // 这里会使用 await 保证了 defer 的等待，如果 这个实例没有调用 resolve 那么这个就会一直等待
+  await frameworkStartedDefer.promise;
+  console.log(3);
+}
+
+b();
+start();
+
+/**
+2
+1
+3
+ */
+```
