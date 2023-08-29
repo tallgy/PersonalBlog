@@ -60,6 +60,7 @@ shadow.innerHTML = innerHTML;
 
 ## 沙箱模式 sandbox
 
+qiankun/src/sandbox/index.ts createSandboxContainer
 
 ### LegacySandbox 基于Proxy 支持单应用的代理沙箱
 
