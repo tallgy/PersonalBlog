@@ -18,6 +18,8 @@ categories:
 ```
 https://www.cnblogs.com/shikaka/p/10463293.html
 https://www.cnblogs.com/shikaka/p/10473462.html
+https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Symbol/toPrimitive
+https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Data_structures#%E5%BC%BA%E5%88%B6%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2
 ```
 
 
@@ -455,3 +457,88 @@ console.log([''] == [])
 
 
 
+
+# 类型转换原理 Symbol.toPrimitive
+
+基本类型没有什么说法，就是简单的转成对应的类型就行
+对象类型，本质其实是调用对应的 toString 和 valueOf 方法来转换成 基本类型
+
+比如
+```JavaScript
+const obj = {
+  a: 1,
+}
+obj.a.valueOf = () => {
+  console.log(1);
+  return 2
+}
+obj.a.toString = () => {
+  console.log(2);
+  return 1
+}
+console.log(obj.a + 2);
+
+/*
+输出就是 1
+*/
+```
+
+如果是将 基本类型变成了 引用类型
+原理：会先调用 valueOf 进行转换 如果为基本类型就会直接返回，
+否则调用 toString 
+如果两次的返回都不是一个基本类型，那么就会报错： Cannot convert object to primitive value 
+```JavaScript
+const obj = {
+  a: new Number(1),
+}
+
+obj.a.valueOf = () => {
+  console.log(1);
+  return 2
+}
+obj.a.toString = () => {
+  console.log(2);
+  return 1
+}
+console.log(obj.a + 2);
+
+/*
+1
+4
+*/
+```
+
+## Symbol.toPrimitive
+
+valueOf 和 toString 的调用是如果 toPrimitive 没有被定义时的默认情况
+但是我们还可以通过重写 toPrimitive 方法，实现类型转换的不同操作
+
+案例
+```JavaScript
+const obj2 = {
+  [Symbol.toPrimitive](hint) {
+    if (hint === "number") {
+      return 10;
+    }
+    if (hint === "string") {
+      return "hello";
+    }
+    return true;
+  },
+};
+```
+
+不同情况的 hint 值
+```JavaScript
+console.log(+obj1); // number
+console.log(`${obj1}`); // string
+
+// 以下都是 default
+console.log(obj1 + ""); 
+console.log(obj + 2);
+console.log(obj + '2');
+console.log(obj + true);
+console.log('' + obj);
+console.log(1+obj);
+console.log(true+obj);
+```
